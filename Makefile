@@ -1,0 +1,45 @@
+UV ?= uv
+POSTGRES_HOST_PORT ?= 5433
+POSTGRES_APP_USER ?= mvp_app
+POSTGRES_APP_PASSWORD ?= mvp_app_password
+POSTGRES_APP_DB ?= mvp_phase1
+
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
+.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke
+
+sync:
+	$(UV) sync
+
+lint:
+	$(UV) run ruff check .
+	$(UV) run black --check .
+
+format:
+	$(UV) run ruff check --fix .
+	$(UV) run black .
+
+test:
+	$(UV) run pytest
+
+db-up:
+	docker compose up -d postgres
+	@until PGPASSWORD="$(POSTGRES_APP_PASSWORD)" psql "postgresql://$(POSTGRES_APP_USER)@localhost:$(POSTGRES_HOST_PORT)/$(POSTGRES_APP_DB)" -c "select 1" >/dev/null 2>&1; do \
+		echo "Waiting for Postgres on localhost:$(POSTGRES_HOST_PORT)..."; \
+		sleep 1; \
+	done
+
+db-down:
+	docker compose down
+
+db-migrate:
+	$(UV) run alembic upgrade head
+
+db-downgrade:
+	$(UV) run alembic downgrade -1
+
+langsmith-smoke:
+	$(UV) run python scripts/langsmith_smoke.py
