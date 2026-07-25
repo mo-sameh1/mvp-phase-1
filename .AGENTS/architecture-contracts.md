@@ -1,0 +1,59 @@
+# Architecture Contracts
+
+These are project-level decisions future work must preserve unless the user explicitly changes direction.
+
+## Repository Boundaries
+
+- This repo is the engineering application repo.
+- A separate GitHub model repo stores generated architecture artifacts.
+- Do not mix source evidence, generated model artifacts, and application code in the same authority boundary.
+
+## MVP System Identity
+
+- Initial system id: `demo-legacy-system`.
+- Required model repo layout:
+
+```text
+systems/demo-legacy-system/as-is/motivation/.gitkeep
+systems/demo-legacy-system/as-is/strategy/.gitkeep
+systems/demo-legacy-system/as-is/business/.gitkeep
+systems/demo-legacy-system/as-is/application/.gitkeep
+systems/demo-legacy-system/as-is/technology/.gitkeep
+```
+
+## Traceability Contract
+
+- Every future model element must include at least one evidence citation.
+- Evidence citations should include source type, locator, and excerpt.
+- Code evidence locators should use file path plus line range where possible.
+- `artifact_versions` is the join between generated artifacts, git commits, PR approval, and agent run tracing.
+- `artifact_versions.pr_number` and `artifact_versions.pr_url` exist now because Epic G and Epic I need direct PR traceability.
+
+## Database Authority
+
+- The model repo is the source of truth for full model content.
+- The database stores indexes, statuses, and links for fast application queries.
+- Avoid duplicating full model JSON into relational tables unless a later task explicitly requires it.
+
+## Schema Design
+
+- Current MVP is single-tenant and intentionally has no `tenant_id` columns.
+- Names and data-access boundaries should remain easy to extend to tenant-scoped access later.
+- Use Alembic migrations for all schema changes.
+- Do not hand-run schema changes outside migrations.
+
+## Agent Runtime Direction
+
+- The orchestrator owns long-lived phase runs and interview loops.
+- Subagents are specialized and stateless task calls.
+- The ArchiMate metamodel skill must ground later ingestion, reconciliation, and validation.
+- Reconciler MVP should be deterministic where specified by the task docs.
+- Validator failures should halt progression before GitHub PR creation.
+
+## Security Contract
+
+- Secrets live in `.env` or deployment secret stores, never in git.
+- `.env.example` may contain placeholders only.
+- GitHub PAT for the model repo must be fine-grained and scoped only to that repo.
+- Future webhook endpoints must verify GitHub signatures before marking artifacts approved.
+
