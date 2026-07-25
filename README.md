@@ -67,7 +67,25 @@ Fill these values in `.env`:
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=...
 LANGCHAIN_PROJECT=7bots-mvp-phase1-dev
+```
+
+Then choose one model provider:
+
+```bash
+# Local Ollama
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1
+
+# Or hosted Groq
+LLM_PROVIDER=groq
+GROQ_API_KEY=...
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Or hosted Anthropic
+LLM_PROVIDER=anthropic
 ANTHROPIC_API_KEY=...
+ANTHROPIC_MODEL=claude-3-5-haiku-latest
 ```
 
 Then run:
@@ -76,7 +94,7 @@ Then run:
 make langsmith-smoke
 ```
 
-The script should create one visible trace in the configured LangSmith project.
+The script should create one visible trace in the configured LangSmith project. For Ollama, make sure `ollama serve` is running and the selected model has already been pulled.
 
 ## Common Commands
 

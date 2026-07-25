@@ -16,7 +16,13 @@ class Settings(BaseSettings):
     langchain_tracing_v2: str = "true"
     langchain_api_key: str = "langsmith_api_key_placeholder"
     langchain_project: str = "7bots-mvp-phase1-dev"
+    llm_provider: str = "ollama"
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.1"
+    groq_api_key: str = "groq_api_key_placeholder"
+    groq_model: str = "llama-3.3-70b-versatile"
     anthropic_api_key: str = "anthropic_api_key_placeholder"
+    anthropic_model: str = "claude-3-5-haiku-latest"
 
 
 @lru_cache
