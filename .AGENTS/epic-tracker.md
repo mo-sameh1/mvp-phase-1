@@ -8,7 +8,7 @@ Status: partially complete where external manual setup is required, otherwise im
 
 - A1 Repository & Python environment scaffolding: done.
 - A2 PostgreSQL database setup: done.
-- A3 GitHub model repository setup: documented; external GitHub repo and PAT still require user action.
+- A3 GitHub model repository setup: model repo exists at `mo-sameh1/mvp-phase1-model` with the required layer layout; fine-grained PAT still requires user action.
 - A4 LangSmith tracing setup: env contract and smoke script added; real trace requires user-provided LangSmith settings plus Ollama, Groq, or Anthropic model access.
 
 Implemented in:
@@ -82,8 +82,6 @@ Synthetic demo evidence set and full acceptance test. This is the MVP finish lin
 
 ## External Actions Still Needed
 
-- Create the separate GitHub model repo.
-- Add the required model repo folder structure.
 - Create a fine-grained GitHub PAT scoped only to that repo.
 - Fill `.env` with real GitHub and LangSmith values, plus Ollama, Groq, or Anthropic model settings.
 - Run `make langsmith-smoke` after real secrets are available.

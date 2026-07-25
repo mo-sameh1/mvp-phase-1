@@ -11,7 +11,7 @@ class Settings(BaseSettings):
         "postgresql+psycopg://mvp_app:mvp_app_password@localhost:5433/mvp_phase1_test"
     )
     model_repo_system_id: str = "demo-legacy-system"
-    github_model_repo: str = "owner/model-repo"
+    github_model_repo: str = "mo-sameh1/mvp-phase1-model"
     github_token: str = "github_pat_placeholder"
     langchain_tracing_v2: str = "true"
     langchain_api_key: str = "langsmith_api_key_placeholder"

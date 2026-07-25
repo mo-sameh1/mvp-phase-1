@@ -55,7 +55,7 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 Create a fine-grained GitHub personal access token scoped only to that model repo with contents and pull-request read/write permissions. Put the repo name and token in `.env`:
 
 ```bash
-GITHUB_MODEL_REPO=owner/model-repo
+GITHUB_MODEL_REPO=mo-sameh1/mvp-phase1-model
 GITHUB_TOKEN=github_pat_...
 ```
 
