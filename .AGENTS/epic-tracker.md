@@ -8,7 +8,7 @@ Status: partially complete where external manual setup is required, otherwise im
 
 - A1 Repository & Python environment scaffolding: done.
 - A2 PostgreSQL database setup: done.
-- A3 GitHub model repository setup: model repo exists at `mo-sameh1/mvp-phase1-model` with the required layer layout; fine-grained PAT still requires user action.
+- A3 GitHub model repository setup: model repo exists at `mo-sameh1/mvp-phase1-model` with the required layer layout; fine-grained PAT has been configured aswell, done.
 - A4 LangSmith tracing setup: env contract and smoke script added; real trace requires user-provided LangSmith settings plus Ollama, Groq, or Anthropic model access.
 
 Implemented in:
