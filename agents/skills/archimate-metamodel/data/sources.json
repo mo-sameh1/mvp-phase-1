@@ -1,0 +1,76 @@
+{
+  "standard": {
+    "name": "ArchiMate 3.2 Specification",
+    "publisher": "The Open Group",
+    "version": "3.2",
+    "document_number": "C226",
+    "official_book_url": "https://books.google.com/books/about/ArchiMate_3_2_Specification.html?id=BS2oEAAAQBAJ",
+    "notes": [
+      "Primary source of truth for ArchiMate 3.2.",
+      "Full normative relationship matrix is in Appendix B of the official specification.",
+      "Do not commit the official PDF/book to this repository."
+    ]
+  },
+  "references": {
+    "official_reference_cards_n221p": {
+      "name": "ArchiMate 3.2 Specification Reference Cards",
+      "publisher": "The Open Group",
+      "document_number": "N221",
+      "url": "https://www.opengroup.org/sites/default/files/docs/downloads/n221p.pdf",
+      "use": "Official cross-check for element vocabulary and relationship type definitions."
+    },
+    "seven_bots_learning_pdf": {
+      "name": "ArchiMate Adoption - Learning Ver.5 7Bots.pdf",
+      "location": "/home/mo-sameh1/Downloads/android_dataset/ArchiMate Adoption - Learning Ver.5 7Bots.pdf",
+      "use": "Internal learning support only. Do not use as normative authority for relationship validity."
+    }
+  },
+  "sections": {
+    "generic_metamodel": {
+      "source": "standard",
+      "section": "Generic Metamodel",
+      "book_page_start": 13
+    },
+    "relationships": {
+      "source": "standard",
+      "section": "Relationships and Relationship Connectors",
+      "book_page_start": 22
+    },
+    "motivation": {
+      "source": "standard",
+      "section": "Motivation Elements",
+      "book_page_start": 40
+    },
+    "strategy": {
+      "source": "standard",
+      "section": "Strategy Layer",
+      "book_page_start": 51
+    },
+    "business": {
+      "source": "standard",
+      "section": "Business Layer",
+      "book_page_start": 58
+    },
+    "application": {
+      "source": "standard",
+      "section": "Application Layer",
+      "book_page_start": 73
+    },
+    "technology": {
+      "source": "standard",
+      "section": "Technology Layer",
+      "book_page_start": 83
+    },
+    "relationships_between_core_layers": {
+      "source": "standard",
+      "section": "Relationships Between Core Layers",
+      "book_page_start": 101
+    },
+    "normative_relationships": {
+      "source": "standard",
+      "section": "Appendix B - Relationships Normative",
+      "book_page_start": 127
+    }
+  }
+}
+

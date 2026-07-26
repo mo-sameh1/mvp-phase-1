@@ -38,9 +38,14 @@ Verification already performed during implementation:
 
 ### Epic C - ArchiMate Knowledge Base
 
-Next likely epic. Requires authoring `archimate-metamodel/SKILL.md` from the official ArchiMate 3.2 specification and later smoke-testing it with a minimal Deep Agent.
+Status: implemented as a conservative source-grounded metamodel foundation.
 
-Important: this is domain-critical. Do not invent ArchiMate rules from memory; cite and structure the official metamodel.
+- `agents/skills/archimate-metamodel/SKILL.md` added.
+- Structured element and relationship type tables added.
+- Deterministic Python query utilities added under `agents.archimate_metamodel`.
+- Tests verify valid elements, wrong-layer failures, unknown failures, approved specialization, and fail-closed unapproved relationship candidates.
+
+Important: the full official Appendix B relationship matrix still needs human extraction/review before Epic E uses broad relationship validation. Current approved relationship validation is intentionally conservative.
 
 ### Epic D - Deep Agent Core Scaffold
 
@@ -82,6 +87,6 @@ Synthetic demo evidence set and full acceptance test. This is the MVP finish lin
 
 ## External Actions Still Needed
 
-- Create a fine-grained GitHub PAT scoped only to that repo.
 - Fill `.env` with real GitHub and LangSmith values, plus Ollama, Groq, or Anthropic model settings.
 - Run `make langsmith-smoke` after real secrets are available.
+- Obtain the official ArchiMate 3.2 Specification for human review of Appendix B relationship rules before approving broad relationship validation.

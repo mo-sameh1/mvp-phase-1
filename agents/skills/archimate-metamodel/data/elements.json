@@ -1,0 +1,85 @@
+{
+  "version": "3.2",
+  "authority": "ArchiMate 3.2 Specification, The Open Group",
+  "layers": {
+    "motivation": {
+      "citation": "ArchiMate 3.2 Specification, Section 6; Open Group N221 reference cards, Motivation Elements",
+      "elements": [
+        {"name": "Stakeholder", "summary": "Role representing parties with interests in architecture effects."},
+        {"name": "Driver", "summary": "Condition that motivates goals and change."},
+        {"name": "Assessment", "summary": "Analysis result about enterprise state relative to a driver."},
+        {"name": "Goal", "summary": "High-level intended direction or desired end state."},
+        {"name": "Outcome", "summary": "End result or consequence of a state of affairs."},
+        {"name": "Principle", "summary": "General rule or intent that guides architecture decisions."},
+        {"name": "Requirement", "summary": "Need that a specific architecture system must satisfy."},
+        {"name": "Constraint", "summary": "Limitation on architecture or realization choices."},
+        {"name": "Meaning", "summary": "Interpretation or knowledge attached to a concept in context."},
+        {"name": "Value", "summary": "Relative worth or importance of a concept."}
+      ]
+    },
+    "strategy": {
+      "citation": "ArchiMate 3.2 Specification, Section 7; Open Group N221 reference cards, Strategy Layer Elements",
+      "elements": [
+        {"name": "Resource", "summary": "Asset owned or controlled by a person or organization."},
+        {"name": "Capability", "summary": "Ability possessed by an active structure element."},
+        {"name": "Value Stream", "summary": "Sequence of activities that creates an overall result for stakeholders."},
+        {"name": "Course of Action", "summary": "Approach or plan for configuring resources and capabilities to achieve a goal."}
+      ]
+    },
+    "business": {
+      "citation": "ArchiMate 3.2 Specification, Section 8; Open Group N221 reference cards, Business Layer Elements",
+      "elements": [
+        {"name": "Business Actor", "summary": "Business entity capable of performing behavior."},
+        {"name": "Business Role", "summary": "Responsibility for performing behavior."},
+        {"name": "Business Collaboration", "summary": "Aggregate of business active structure elements working together."},
+        {"name": "Business Interface", "summary": "Access point where business services are made available."},
+        {"name": "Business Process", "summary": "Sequence of business behaviors producing a specific result."},
+        {"name": "Business Function", "summary": "Collection of business behavior grouped by criteria."},
+        {"name": "Business Interaction", "summary": "Collective business behavior performed by multiple business actors or roles."},
+        {"name": "Business Event", "summary": "Business-related state change."},
+        {"name": "Business Service", "summary": "Exposed business behavior provided to an environment."},
+        {"name": "Business Object", "summary": "Concept used within a business domain."},
+        {"name": "Contract", "summary": "Agreement specification between provider and consumer."},
+        {"name": "Representation", "summary": "Perceptible form of information carried by a business object."},
+        {"name": "Product", "summary": "Coherent offering of services or passive structure elements with a contract."}
+      ]
+    },
+    "application": {
+      "citation": "ArchiMate 3.2 Specification, Section 9; Open Group N221 reference cards, Application Layer Elements",
+      "elements": [
+        {"name": "Application Component", "summary": "Modular and replaceable encapsulation of application functionality."},
+        {"name": "Application Collaboration", "summary": "Aggregate of application active structure elements working together."},
+        {"name": "Application Interface", "summary": "Access point where application services are made available."},
+        {"name": "Application Function", "summary": "Automated behavior performed by an application component."},
+        {"name": "Application Interaction", "summary": "Collective application behavior performed by multiple components."},
+        {"name": "Application Process", "summary": "Sequence of application behaviors producing a result."},
+        {"name": "Application Event", "summary": "Application state change."},
+        {"name": "Application Service", "summary": "Explicitly defined exposed application behavior."},
+        {"name": "Data Object", "summary": "Data structured for automated processing."}
+      ]
+    },
+    "technology": {
+      "citation": "ArchiMate 3.2 Specification, Section 10; Open Group N221 reference cards, Technology Layer Elements",
+      "elements": [
+        {"name": "Node", "summary": "Computational or physical resource that hosts or interacts with resources."},
+        {"name": "Device", "summary": "Physical IT resource for storing or executing software and artifacts."},
+        {"name": "System Software", "summary": "Software environment for storing, executing, or using software or data."},
+        {"name": "Technology Collaboration", "summary": "Aggregate of technology active structure elements working together."},
+        {"name": "Technology Interface", "summary": "Access point for technology services."},
+        {"name": "Path", "summary": "Link through which technology elements exchange data, energy, or material."},
+        {"name": "Communication Network", "summary": "Structures and behaviors connecting devices or system software."},
+        {"name": "Technology Function", "summary": "Collection of technology behavior performed by technology active structure."},
+        {"name": "Technology Process", "summary": "Sequence of technology behaviors producing a result."},
+        {"name": "Technology Interaction", "summary": "Collective technology behavior performed by multiple technology elements."},
+        {"name": "Technology Event", "summary": "Technology state change."},
+        {"name": "Technology Service", "summary": "Explicitly defined exposed technology behavior."},
+        {"name": "Artifact", "summary": "Deployable data used or produced by development, deployment, or operation."},
+        {"name": "Equipment", "summary": "Physical machine, tool, or instrument for creating or transforming materials."},
+        {"name": "Facility", "summary": "Physical structure or environment."},
+        {"name": "Distribution Network", "summary": "Physical network transporting materials or energy."},
+        {"name": "Material", "summary": "Tangible physical matter or energy."}
+      ]
+    }
+  }
+}
+

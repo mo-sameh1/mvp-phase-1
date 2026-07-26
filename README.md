@@ -107,3 +107,20 @@ make db-down       # stop local Postgres
 make db-migrate    # alembic upgrade head
 make db-downgrade  # alembic downgrade -1
 ```
+
+## ArchiMate Metamodel Skill
+
+Epic C adds a source-grounded ArchiMate 3.2 metamodel foundation:
+
+```text
+agents/skills/archimate-metamodel/
+agents/archimate_metamodel/
+```
+
+The structured JSON files are the deterministic validator authority. `SKILL.md` is the agent-readable guide. Relationship validation fails closed unless a rule is marked approved from an official source.
+
+Run the deterministic smoke test with:
+
+```bash
+make archimate-smoke
+```

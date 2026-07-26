@@ -1,0 +1,51 @@
+{
+  "version": "3.2",
+  "authority": "ArchiMate 3.2 Specification, The Open Group",
+  "relationship_types": [
+    {"name": "Composition", "category": "structural", "summary": "Strong whole-part structural relationship.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Aggregation", "category": "structural", "summary": "Weak whole-part structural relationship.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Assignment", "category": "structural", "summary": "Allocation of responsibility, behavior performance, storage, or execution.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Realization", "category": "structural", "summary": "More concrete element contributes to creation or operation of a more abstract element.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Serving", "category": "dependency", "summary": "One element provides functionality to another.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Access", "category": "dependency", "summary": "Behavior or active structure can observe or act on passive structure.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Influence", "category": "dependency", "summary": "Element affects implementation or achievement of a motivation element.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Association", "category": "dependency", "summary": "Unspecified relationship not represented by a more specific ArchiMate relationship.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Triggering", "category": "dynamic", "summary": "Temporal or causal relationship between elements.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Flow", "category": "dynamic", "summary": "Transfer from one element to another.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"},
+    {"name": "Specialization", "category": "other", "summary": "One element is a particular kind of another element.", "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Relationships"}
+  ],
+  "validation_rules": [
+    {
+      "id": "specialization-same-element-type",
+      "relationship_type": "Specialization",
+      "mode": "same_element_type",
+      "review_status": "approved",
+      "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Specialization relationship",
+      "note": "Generic approved rule used by the deterministic validator. Source and target must normalize to the same ArchiMate element type."
+    }
+  ],
+  "candidate_examples": [
+    {
+      "source_type": "Business Role",
+      "relationship_type": "Assignment",
+      "target_type": "Business Process",
+      "review_status": "needs_review",
+      "citation": "7Bots ArchiMate Adoption learning PDF, slide 65; requires confirmation against official Appendix B before validator use"
+    },
+    {
+      "source_type": "Application Component",
+      "relationship_type": "Realization",
+      "target_type": "Application Service",
+      "review_status": "needs_review",
+      "citation": "7Bots ArchiMate Adoption learning PDF, slide 65; requires confirmation against official Appendix B before validator use"
+    },
+    {
+      "source_type": "Application Service",
+      "relationship_type": "Serving",
+      "target_type": "Business Process",
+      "review_status": "needs_review",
+      "citation": "7Bots ArchiMate Adoption learning PDF, slide 66; requires confirmation against official Appendix B before validator use"
+    }
+  ]
+}
+

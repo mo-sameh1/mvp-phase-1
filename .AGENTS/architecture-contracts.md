@@ -47,6 +47,8 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - The orchestrator owns long-lived phase runs and interview loops.
 - Subagents are specialized and stateless task calls.
 - The ArchiMate metamodel skill must ground later ingestion, reconciliation, and validation.
+- `agents/skills/archimate-metamodel/data/*.json` is the deterministic validator authority; `SKILL.md` is the agent-readable guide.
+- Relationship pairs not marked `review_status = "approved"` must fail closed until reviewed against the official ArchiMate 3.2 Appendix B normative table.
 - Reconciler MVP should be deterministic where specified by the task docs.
 - Validator failures should halt progression before GitHub PR creation.
 
@@ -56,4 +58,3 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - `.env.example` may contain placeholders only.
 - GitHub PAT for the model repo must be fine-grained and scoped only to that repo.
 - Future webhook endpoints must verify GitHub signatures before marking artifacts approved.
-
