@@ -22,7 +22,7 @@
     "seven_bots_learning_pdf": {
       "name": "ArchiMate Adoption - Learning Ver.5 7Bots.pdf",
       "location": "/home/mo-sameh1/Downloads/android_dataset/ArchiMate Adoption - Learning Ver.5 7Bots.pdf",
-      "use": "Internal learning support only. Do not use as normative authority for relationship validity."
+      "use": "Accepted project source of truth when it explicitly states an MVP relationship example or element mapping."
     }
   },
   "sections": {
@@ -73,4 +73,3 @@
     }
   }
 }
-

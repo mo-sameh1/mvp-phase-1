@@ -139,6 +139,20 @@ class ArchiMateMetamodel:
                     "rule_id": rule["id"],
                     "citation": rule["citation"],
                 }
+            if (
+                rule["mode"] == "explicit_pair"
+                and normalize_name(rule["source_type"]) == source_key
+                and normalize_name(rule["target_type"]) == target_key
+            ):
+                return {
+                    "valid": True,
+                    "status": "valid",
+                    "relationship_type": relationship["name"],
+                    "source_type": source["name"],
+                    "target_type": target["name"],
+                    "rule_id": rule["id"],
+                    "citation": rule["citation"],
+                }
 
         candidate = self._candidate_relationship(source_key, relationship_key, target_key)
         if candidate is not None:

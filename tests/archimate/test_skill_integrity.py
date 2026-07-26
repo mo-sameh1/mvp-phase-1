@@ -31,7 +31,12 @@ def test_candidate_examples_are_not_approved_rules():
     relationships = load_json("relationships.json")
     approved_rule_ids = {rule["id"] for rule in relationships["validation_rules"]}
 
-    assert approved_rule_ids == {"specialization-same-element-type"}
+    assert approved_rule_ids == {
+        "specialization-same-element-type",
+        "business-role-assignment-business-process",
+        "application-component-realization-application-service",
+        "application-service-serving-business-process",
+    }
     for candidate in relationships["candidate_examples"]:
         assert candidate["review_status"] == "needs_review"
 

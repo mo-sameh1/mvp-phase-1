@@ -15,7 +15,7 @@ agents/archimate_metamodel/
 
 ## Source Policy
 
-The primary authority is The Open Group ArchiMate 3.2 Specification. The Open Group N221 reference cards are used as an official vocabulary cross-check. The provided 7Bots learning PDF is supporting material only and is not treated as normative authority for relationship validity.
+The primary authority is The Open Group ArchiMate 3.2 Specification. The Open Group N221 reference cards are used as an official vocabulary cross-check. The provided 7Bots learning PDF is accepted as a project source of truth when it explicitly states MVP relationship examples or element mappings.
 
 The official specification PDF/book should stay outside git, for example in a local ignored `reference/` directory or a personal Downloads folder.
 
@@ -27,9 +27,9 @@ The metamodel fails closed:
 - wrong layer/type pairs are invalid
 - unknown relationship types are invalid
 - unknown relationship pairs are invalid
-- candidate examples marked `needs_review` are invalid until reviewed against the official Appendix B relationship matrix
+- examples not explicitly supported by an accepted source remain invalid until reviewed
 
-Current approved relationship validation is intentionally conservative. It includes same-type `Specialization`; the full Appendix B matrix still requires human extraction and review before Epic E relies on broad relationship validation.
+Current approved relationship validation is intentionally conservative. It includes same-type `Specialization` plus the explicit relationship examples stated in the 7Bots learning PDF: `Business Role` assigned to `Business Process`, `Application Component` realizes `Application Service`, and `Application Service` serves `Business Process`.
 
 ## Python API
 
@@ -41,4 +41,3 @@ from agents.archimate_metamodel import (
     list_element_types,
 )
 ```
-

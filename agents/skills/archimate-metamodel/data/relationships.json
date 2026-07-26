@@ -22,30 +22,37 @@
       "review_status": "approved",
       "citation": "ArchiMate 3.2 Specification, Section 5; Open Group N221 reference cards, Specialization relationship",
       "note": "Generic approved rule used by the deterministic validator. Source and target must normalize to the same ArchiMate element type."
+    },
+    {
+      "id": "business-role-assignment-business-process",
+      "relationship_type": "Assignment",
+      "mode": "explicit_pair",
+      "source_type": "Business Role",
+      "target_type": "Business Process",
+      "review_status": "approved",
+      "citation": "7Bots ArchiMate Adoption learning PDF, slide 65: Assignment example states Role assigned to Process",
+      "note": "Approved for MVP because the provided 7Bots ArchiMate learning PDF is accepted as project source of truth."
+    },
+    {
+      "id": "application-component-realization-application-service",
+      "relationship_type": "Realization",
+      "mode": "explicit_pair",
+      "source_type": "Application Component",
+      "target_type": "Application Service",
+      "review_status": "approved",
+      "citation": "7Bots ArchiMate Adoption learning PDF, slide 65: Realization example states Application Component realizes Application Service",
+      "note": "Approved for MVP because the provided 7Bots ArchiMate learning PDF is accepted as project source of truth."
+    },
+    {
+      "id": "application-service-serving-business-process",
+      "relationship_type": "Serving",
+      "mode": "explicit_pair",
+      "source_type": "Application Service",
+      "target_type": "Business Process",
+      "review_status": "approved",
+      "citation": "7Bots ArchiMate Adoption learning PDF, slide 66: Serving example states Application Service serves Business Process",
+      "note": "Approved for MVP because the provided 7Bots ArchiMate learning PDF is accepted as project source of truth."
     }
   ],
-  "candidate_examples": [
-    {
-      "source_type": "Business Role",
-      "relationship_type": "Assignment",
-      "target_type": "Business Process",
-      "review_status": "needs_review",
-      "citation": "7Bots ArchiMate Adoption learning PDF, slide 65; requires confirmation against official Appendix B before validator use"
-    },
-    {
-      "source_type": "Application Component",
-      "relationship_type": "Realization",
-      "target_type": "Application Service",
-      "review_status": "needs_review",
-      "citation": "7Bots ArchiMate Adoption learning PDF, slide 65; requires confirmation against official Appendix B before validator use"
-    },
-    {
-      "source_type": "Application Service",
-      "relationship_type": "Serving",
-      "target_type": "Business Process",
-      "review_status": "needs_review",
-      "citation": "7Bots ArchiMate Adoption learning PDF, slide 66; requires confirmation against official Appendix B before validator use"
-    }
-  ]
+  "candidate_examples": []
 }
-

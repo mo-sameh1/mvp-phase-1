@@ -16,28 +16,35 @@ def main() -> int:
 
     valid_element = explain_rule(layer="application", archimate_type="Application Component")
     wrong_layer = explain_rule(layer="business", archimate_type="Application Component")
-    approved_relationship = explain_rule(
+    approved_specialization = explain_rule(
         source_type="Business Process",
         relationship_type="Specialization",
         target_type="Business Process",
     )
-    unapproved_candidate = explain_rule(
+    pdf_backed_relationship = explain_rule(
         source_type="Application Service",
+        relationship_type="Serving",
+        target_type="Business Process",
+    )
+    unsupported_relationship = explain_rule(
+        source_type="Application Component",
         relationship_type="Serving",
         target_type="Business Process",
     )
 
     print_result("Valid element lookup", valid_element)
     print_result("Wrong-layer lookup", wrong_layer)
-    print_result("Approved relationship lookup", approved_relationship)
-    print_result("Unapproved candidate relationship lookup", unapproved_candidate)
+    print_result("Approved specialization lookup", approved_specialization)
+    print_result("7Bots PDF-backed relationship lookup", pdf_backed_relationship)
+    print_result("Unsupported relationship lookup", unsupported_relationship)
 
     checks = [
         valid_element["valid"] is True,
         wrong_layer["valid"] is False,
-        approved_relationship["valid"] is True,
-        unapproved_candidate["valid"] is False,
-        unapproved_candidate["status"] == "needs_review",
+        approved_specialization["valid"] is True,
+        pdf_backed_relationship["valid"] is True,
+        unsupported_relationship["valid"] is False,
+        unsupported_relationship["status"] == "unknown",
     ]
     return 0 if all(checks) else 1
 

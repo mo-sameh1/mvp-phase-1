@@ -48,7 +48,7 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Subagents are specialized and stateless task calls.
 - The ArchiMate metamodel skill must ground later ingestion, reconciliation, and validation.
 - `agents/skills/archimate-metamodel/data/*.json` is the deterministic validator authority; `SKILL.md` is the agent-readable guide.
-- Relationship pairs not marked `review_status = "approved"` must fail closed until reviewed against the official ArchiMate 3.2 Appendix B normative table.
+- Relationship pairs not marked `review_status = "approved"` must fail closed until supported by the official ArchiMate 3.2 material or the accepted 7Bots ArchiMate learning PDF.
 - Reconciler MVP should be deterministic where specified by the task docs.
 - Validator failures should halt progression before GitHub PR creation.
 

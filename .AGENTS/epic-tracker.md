@@ -43,9 +43,9 @@ Status: implemented as a conservative source-grounded metamodel foundation.
 - `agents/skills/archimate-metamodel/SKILL.md` added.
 - Structured element and relationship type tables added.
 - Deterministic Python query utilities added under `agents.archimate_metamodel`.
-- Tests verify valid elements, wrong-layer failures, unknown failures, approved specialization, and fail-closed unapproved relationship candidates.
+- Tests verify valid elements, wrong-layer failures, unknown failures, approved specialization, 7Bots PDF-backed relationship examples, and fail-closed unsupported relationship pairs.
 
-Important: the full official Appendix B relationship matrix still needs human extraction/review before Epic E uses broad relationship validation. Current approved relationship validation is intentionally conservative.
+Important: broad relationship validation remains intentionally conservative. Add only relationship pairs explicitly backed by the official ArchiMate 3.2 material or the accepted 7Bots ArchiMate learning PDF.
 
 ### Epic D - Deep Agent Core Scaffold
 
@@ -89,4 +89,4 @@ Synthetic demo evidence set and full acceptance test. This is the MVP finish lin
 
 - Fill `.env` with real GitHub and LangSmith values, plus Ollama, Groq, or Anthropic model settings.
 - Run `make langsmith-smoke` after real secrets are available.
-- Obtain the official ArchiMate 3.2 Specification for human review of Appendix B relationship rules before approving broad relationship validation.
+- Obtain the official ArchiMate 3.2 Specification if broad Appendix B relationship coverage is required beyond the accepted 7Bots learning PDF examples.

@@ -11,6 +11,8 @@ Use this skill whenever an agent extracts, classifies, reconciles, or validates 
 
 The primary authority is **The Open Group ArchiMate 3.2 Specification**. The official Open Group N221 reference cards are used as an official cross-check for element names and relationship type definitions.
 
+The provided `ArchiMate Adoption - Learning Ver.5 7Bots.pdf` is also accepted as a project source of truth when it explicitly states MVP relationship examples or element mappings.
+
 Structured data files are the validator authority:
 
 - `data/elements.json`
@@ -67,11 +69,14 @@ The supported ArchiMate 3.2 relationship vocabulary is:
 - Flow
 - Specialization
 
-The current approved deterministic relationship rule is intentionally conservative:
+The current approved deterministic relationship rules are intentionally conservative:
 
 - `Specialization` is valid only when source and target normalize to the same ArchiMate element type.
+- `Business Role` assigned to `Business Process`.
+- `Application Component` realizes `Application Service`.
+- `Application Service` serves `Business Process`.
 
-All other source-target relationship pairs require extraction and review against the official ArchiMate 3.2 Appendix B normative relationship table before they can be marked approved.
+All other source-target relationship pairs require explicit support from an accepted source before they can be marked approved.
 
 ## Required Behavior For Agents
 
@@ -83,4 +88,3 @@ When producing model fragments:
 - Do not create custom relationship types.
 - Do not validate relationship pairs from intuition.
 - Flag unsupported or unknown relationship pairs for human review instead of writing them as valid.
-

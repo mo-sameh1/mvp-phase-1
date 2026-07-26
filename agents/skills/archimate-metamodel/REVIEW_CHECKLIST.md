@@ -12,7 +12,7 @@ Use this checklist before Epic E ingestion agents rely on the metamodel for prod
 ## Relationship Matrix Review
 
 - [ ] Extract Appendix B - Relationships Normative from the official 3.2 specification.
-- [ ] Add only source-target relationship pairs that are explicitly present in the official normative table or official generic rules.
+- [ ] Add only source-target relationship pairs that are explicitly present in the official normative table, official generic rules, or the accepted 7Bots ArchiMate learning PDF.
 - [ ] Add section/page citations for each approved rule.
 - [ ] Keep ambiguous entries as `needs_review`.
 - [ ] Confirm `candidate_examples` are not used by `is_valid_relationship`.
@@ -32,4 +32,3 @@ Reviewer:
 Date:
 
 Notes:
-

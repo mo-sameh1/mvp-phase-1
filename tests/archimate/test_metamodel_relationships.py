@@ -35,8 +35,18 @@ def test_cross_type_specialization_fails_closed():
     assert "not established" in explanation["reason"]
 
 
-def test_unapproved_candidate_relationship_is_not_valid():
-    assert not is_valid_relationship(
+def test_7bots_pdf_backed_relationship_examples_are_valid():
+    assert is_valid_relationship(
+        "Business Role",
+        "Assignment",
+        "Business Process",
+    )
+    assert is_valid_relationship(
+        "Application Component",
+        "Realization",
+        "Application Service",
+    )
+    assert is_valid_relationship(
         "Application Service",
         "Serving",
         "Business Process",
@@ -47,9 +57,22 @@ def test_unapproved_candidate_relationship_is_not_valid():
         relationship_type="Serving",
         target_type="Business Process",
     )
+    assert explanation["valid"] is True
+    assert explanation["status"] == "valid"
+    assert explanation["rule_id"] == "application-service-serving-business-process"
+    assert "7Bots ArchiMate Adoption learning PDF" in explanation["citation"]
+
+
+def test_unsupported_relationship_pair_fails_closed():
+    explanation = explain_rule(
+        source_type="Application Component",
+        relationship_type="Serving",
+        target_type="Business Process",
+    )
+
     assert explanation["valid"] is False
-    assert explanation["status"] == "needs_review"
-    assert "requires confirmation" in explanation["citation"]
+    assert explanation["status"] == "unknown"
+    assert "not established" in explanation["reason"]
 
 
 def test_unknown_relationship_type_fails_closed():
