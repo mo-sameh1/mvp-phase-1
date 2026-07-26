@@ -46,6 +46,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 
 - The orchestrator owns long-lived phase runs and interview loops.
 - Subagents are specialized and stateless task calls.
+- Agent runtime integration must go through `agents/runtime/` adapters rather than direct `create_deep_agent` calls scattered through feature code.
+- LLM provider selection must remain configurable through `LLM_PROVIDER` with supported providers `ollama`, `groq`, and `anthropic`.
+- Deep Agent filesystem access is split into `/evidence/` for read-only source material, `/systems/` for writable model artifacts, and `/skills/` for read-only project skills.
 - The ArchiMate metamodel skill must ground later ingestion, reconciliation, and validation.
 - `agents/skills/archimate-metamodel/data/*.json` is the deterministic validator authority; `SKILL.md` is the agent-readable guide.
 - Relationship pairs not marked `review_status = "approved"` must fail closed until supported by the official ArchiMate 3.2 material or the accepted 7Bots ArchiMate learning PDF.

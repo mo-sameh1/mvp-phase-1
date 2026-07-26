@@ -55,6 +55,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 Create a fine-grained GitHub personal access token scoped only to that model repo with contents and pull-request read/write permissions. Put the repo name and token in `.env`:
 
 ```bash
+MODEL_REPO_SYSTEM_ID=demo-legacy-system
+EVIDENCE_ROOT=reference/evidence
+MODEL_REPO_CHECKOUT=../mvp-phase1-model
 GITHUB_MODEL_REPO=mo-sameh1/mvp-phase1-model
 GITHUB_TOKEN=github_pat_...
 ```
@@ -106,6 +109,8 @@ make db-up         # start local Postgres
 make db-down       # stop local Postgres
 make db-migrate    # alembic upgrade head
 make db-downgrade  # alembic downgrade -1
+make archimate-smoke
+make epic-d-smoke  # requires real LLM provider env
 ```
 
 ## ArchiMate Metamodel Skill
@@ -123,4 +128,42 @@ Run the deterministic smoke test with:
 
 ```bash
 make archimate-smoke
+```
+
+## Deep Agent Runtime Scaffold
+
+Epic D adds the shared model-element schema and Deep Agent runtime scaffold:
+
+```text
+agents/schema.py
+agents/runtime/
+```
+
+The runtime keeps provider selection, filesystem routing, base agent construction, and placeholder
+subagent registration in separate modules. `LLM_PROVIDER` may be `ollama`, `groq`, or `anthropic`.
+
+The agent-visible filesystem is split into three routes:
+
+```text
+/evidence/  read-only local evidence from EVIDENCE_ROOT
+/systems/   writable model repo checkout under MODEL_REPO_CHECKOUT/systems
+/skills/    read-only project skills from agents/skills
+```
+
+Run the Deep Agent smoke checks after real provider and LangSmith env vars are set:
+
+```bash
+make deepagent-smoke
+make deepagent-subagent-smoke
+make epic-d-smoke
+```
+
+`deepagent-subagent-smoke` verifies the five Epic E placeholder subagents:
+
+```text
+strategy-analyst
+business-analyst
+code-analyzer
+infra-analyzer
+integration-mapper
 ```

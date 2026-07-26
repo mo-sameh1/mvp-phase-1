@@ -49,9 +49,25 @@ Important: broad relationship validation remains intentionally conservative. Add
 
 ### Epic D - Deep Agent Core Scaffold
 
-Requires common model/evidence Pydantic schema, filesystem backend configuration, base `create_deep_agent`, and placeholder subagent wiring.
+Status: implemented as the runtime foundation for Epic E.
 
-Depends on A/B and partly on C.
+- D0 common model/evidence Pydantic schema: done in `agents/schema.py`.
+- D1 filesystem backend configuration: done in `agents/runtime/filesystem.py`.
+- D2 base `create_deep_agent` instantiation: done in `agents/runtime/deep_agent.py`.
+- D3 placeholder subagent wiring smoke test: done in `agents/runtime/subagents.py` and `scripts/deepagent_subagent_smoke.py`.
+
+Runtime contracts:
+
+- `LLM_PROVIDER` supports `ollama`, `groq`, and `anthropic`.
+- `/evidence/` is agent-readable and agent-write-denied.
+- `/systems/` maps to the model repo checkout's `systems/` tree and is writable.
+- `/skills/` exposes project skills and is agent-write-denied.
+- Epic E subagent names are fixed as `strategy-analyst`, `business-analyst`, `code-analyzer`, `infra-analyzer`, and `integration-mapper`.
+
+Verification:
+
+- `make test` covers schema, filesystem routing, and mocked Deep Agent construction.
+- `make epic-d-smoke` requires real provider and LangSmith environment values.
 
 ### Epic E - Ingestion Subagents
 
