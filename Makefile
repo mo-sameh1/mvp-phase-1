@@ -9,7 +9,7 @@ include .env
 export
 endif
 
-.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke
+.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke
 
 sync:
 	$(UV) sync
@@ -46,3 +46,11 @@ langsmith-smoke:
 
 archimate-smoke:
 	$(UV) run python scripts/archimate_metamodel_smoke.py
+
+deepagent-smoke:
+	$(UV) run python scripts/deepagent_smoke.py
+
+deepagent-subagent-smoke:
+	$(UV) run python scripts/deepagent_subagent_smoke.py
+
+epic-d-smoke: deepagent-smoke deepagent-subagent-smoke
