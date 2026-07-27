@@ -79,6 +79,13 @@ Then choose one model provider:
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.1
+OLLAMA_API_KEY=
+
+# Or Ollama cloud
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=https://ollama.com
+OLLAMA_API_KEY=...
+OLLAMA_MODEL=gpt-oss:120b-cloud
 
 # Or hosted Groq
 LLM_PROVIDER=groq
@@ -97,7 +104,7 @@ Then run:
 make langsmith-smoke
 ```
 
-The script should create one visible trace in the configured LangSmith project. For Ollama, make sure `ollama serve` is running and the selected model has already been pulled.
+The script should create one visible trace in the configured LangSmith project. For local Ollama, make sure `ollama serve` is running and the selected model has already been pulled. For Ollama cloud, set `OLLAMA_BASE_URL=https://ollama.com` and fill `OLLAMA_API_KEY`.
 
 ## Common Commands
 

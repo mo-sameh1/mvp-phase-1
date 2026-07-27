@@ -34,6 +34,17 @@ def missing_required_env(provider: str) -> list[str]:
     return [name for name in required_env(provider) if not os.getenv(name)]
 
 
+def ollama_base_url() -> str:
+    return os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+
+def ollama_client_kwargs() -> dict[str, dict[str, str]]:
+    api_key = os.getenv("OLLAMA_API_KEY")
+    if not api_key:
+        return {}
+    return {"headers": {"Authorization": f"Bearer {api_key}"}}
+
+
 def build_chat_model(provider: str | None = None):
     provider = provider or selected_provider()
 
@@ -42,7 +53,8 @@ def build_chat_model(provider: str | None = None):
 
         return ChatOllama(
             model=os.getenv("OLLAMA_MODEL", "llama3.1"),
-            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+            base_url=ollama_base_url(),
+            client_kwargs=ollama_client_kwargs(),
             temperature=0,
         )
 
