@@ -2,9 +2,9 @@
 
 Engineering repository for the 7bots.ai legacy modernization MVP. This repo is the application codebase. It is separate from the GitHub model repository that will store generated ArchiMate output.
 
-The current implementation covers Epics A-E: local tooling, Postgres, configuration,
+The current implementation covers Epics A-F: local tooling, Postgres, configuration,
 Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep Agent runtime
-scaffold, and source-grounded ingestion subagent contracts.
+scaffold, source-grounded ingestion subagent contracts, and model assembly subagents.
 
 ## Local Setup
 
@@ -121,6 +121,7 @@ make db-downgrade  # alembic downgrade -1
 make archimate-smoke
 make epic-d-smoke  # requires real LLM provider env
 make epic-e-smoke  # deterministic fixture, no live LLM call
+make epic-f-smoke  # live assembly subagent smoke, requires real LLM provider env
 ```
 
 ## ArchiMate Metamodel Skill
@@ -212,3 +213,28 @@ make epic-e-smoke EPIC_E_REPEAT=2
 The committed fixture is synthetic and safe for git. Real client evidence should stay under
 `EVIDENCE_ROOT` outside git, and generated model JSON should be written to the separate model repo
 checkout configured by `MODEL_REPO_CHECKOUT`.
+
+## Epic F Assembly Subagents
+
+Epic F adds two model assembly subagents backed by deterministic tools:
+
+```text
+reconciler
+validator
+```
+
+The reconciler merges exact normalized-name duplicates within the same layer and ArchiMate type,
+retains all evidence, rewrites relationship targets to canonical IDs, and flags ambiguous near-misses
+for human review. The validator scans the reconciled model tree tolerantly, checks schema/evidence
+and Epic C metamodel rules, and writes human plus machine-readable reports under:
+
+```text
+systems/<system-id>/reports/<run-id>/
+```
+
+Run the live smoke test after provider and LangSmith environment values are configured:
+
+```bash
+make epic-f-smoke
+make epic-f-smoke EPIC_F_ARGS="--include-broken-demo"
+```

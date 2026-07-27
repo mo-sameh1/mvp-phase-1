@@ -99,7 +99,18 @@ Verification:
 
 ### Epic F - Reconciler + Validator
 
-MVP reconciler should be deterministic normalized-name matching. Validator must enforce schema/metamodel/evidence rules and halt on hard violations.
+Status: implemented as two Deep Agent assembly subagents backed by deterministic tools.
+
+- F1 `reconciler`: merges exact normalized-name duplicates in place, retains evidence, rewrites
+  relationship targets to canonical IDs, and reports ambiguous near-misses for human review.
+- F2 `validator`: tolerantly scans reconciled model JSON, validates schema/evidence and Epic C
+  ArchiMate rules, and writes JSON/Markdown reports.
+- Reports are written under `systems/<system-id>/reports/<run-id>/`.
+
+Verification:
+
+- `make test`
+- `make epic-f-smoke` requires real provider and LangSmith environment values.
 
 ### Epic G - Git Versioning & PR Automation
 

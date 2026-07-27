@@ -55,8 +55,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Epic E ingestion profiles live under `agents/ingestion/`; prompts may extract candidates, but schema validation, ArchiMate validation, target-ID checks, and path conventions decide what is accepted.
 - Ingestion writes one JSON file per element under `/systems/<system-id>/as-is/<layer>/<id>.json`.
 - The integration mapper may append relationships only to existing model elements and must report unsupported or unapproved candidates as skipped.
-- Reconciler MVP should be deterministic where specified by the task docs.
-- Validator failures should halt progression before GitHub PR creation.
+- Epic F assembly uses real `reconciler` and `validator` subagents, but deterministic Python tools are the authority for merge and validation decisions.
+- Reconciler MVP merges only exact normalized-name duplicates within the same layer and ArchiMate type; ambiguous near-misses are review items, not auto-merges.
+- Validator reports are committed artifacts for later PR review. Hard validation failures should halt progression before GitHub PR creation.
 
 ## Security Contract
 
