@@ -1,0 +1,16 @@
+{
+  "archimate_type": "Application Service",
+  "confidence": "observed",
+  "documentation": "Handles payment submissions for permit cases.",
+  "evidence": [
+    {
+      "excerpt": "Payment Service handles permit payment submissions.",
+      "locator": "/evidence/code/src/payment_service.py:1-8",
+      "source_type": "code"
+    }
+  ],
+  "id": "payment-service",
+  "layer": "application",
+  "name": "Payment Service",
+  "relationships": []
+}

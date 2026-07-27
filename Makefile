@@ -4,13 +4,14 @@ POSTGRES_APP_USER ?= mvp_app
 POSTGRES_APP_PASSWORD ?= mvp_app_password
 POSTGRES_APP_DB ?= mvp_phase1
 EPIC_E_REPEAT ?= 1
+EPIC_F_ARGS ?=
 
 ifneq (,$(wildcard .env))
 include .env
 export
 endif
 
-.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke epic-e-smoke
+.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke epic-e-smoke epic-f-smoke
 
 sync:
 	$(UV) sync
@@ -58,3 +59,6 @@ epic-d-smoke: deepagent-smoke deepagent-subagent-smoke
 
 epic-e-smoke:
 	$(UV) run python scripts/epic_e_smoke.py --repeat $(EPIC_E_REPEAT)
+
+epic-f-smoke:
+	$(UV) run python scripts/epic_f_smoke.py $(EPIC_F_ARGS)

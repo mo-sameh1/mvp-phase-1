@@ -1,0 +1,16 @@
+{
+  "archimate_type": "Application Service",
+  "confidence": "observed",
+  "documentation": "Valid target service for the illegal relationship pair.",
+  "evidence": [
+    {
+      "excerpt": "Valid service target for broken fixture.",
+      "locator": "/evidence/broken.md:5",
+      "source_type": "fixture"
+    }
+  ],
+  "id": "valid-app-service",
+  "layer": "application",
+  "name": "Valid App Service",
+  "relationships": []
+}

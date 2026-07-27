@@ -1,0 +1,16 @@
+{
+  "archimate_type": "Application Service",
+  "confidence": "observed",
+  "documentation": "Handles payment status queries and settlement support.",
+  "evidence": [
+    {
+      "excerpt": "Payment Services handles status lookups and settlement support.",
+      "locator": "/evidence/code/src/payment_status.py:2-9",
+      "source_type": "code"
+    }
+  ],
+  "id": "payment-services",
+  "layer": "application",
+  "name": "Payment Services",
+  "relationships": []
+}

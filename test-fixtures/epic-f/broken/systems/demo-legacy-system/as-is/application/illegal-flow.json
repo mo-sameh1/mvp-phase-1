@@ -1,0 +1,28 @@
+{
+  "archimate_type": "Application Interface",
+  "confidence": "observed",
+  "documentation": "This deliberately uses an unsupported Flow relationship pair.",
+  "evidence": [
+    {
+      "excerpt": "Broken fixture with unsupported flow relationship.",
+      "locator": "/evidence/broken.md:3",
+      "source_type": "fixture"
+    }
+  ],
+  "id": "illegal-flow",
+  "layer": "application",
+  "name": "Illegal Flow",
+  "relationships": [
+    {
+      "evidence": [
+        {
+          "excerpt": "The interface forwards calls to the service.",
+          "locator": "/evidence/broken.md:4",
+          "source_type": "fixture"
+        }
+      ],
+      "target_id": "valid-app-service",
+      "type": "Flow"
+    }
+  ]
+}

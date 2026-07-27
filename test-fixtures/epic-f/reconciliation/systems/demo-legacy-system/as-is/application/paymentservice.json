@@ -1,0 +1,16 @@
+{
+  "archimate_type": "Application Service",
+  "confidence": "observed",
+  "documentation": "Legacy module name for the same payment service capability.",
+  "evidence": [
+    {
+      "excerpt": "PaymentService exposes the same payment submission behavior.",
+      "locator": "/evidence/code/src/legacy_payment.py:4-12",
+      "source_type": "code"
+    }
+  ],
+  "id": "paymentservice",
+  "layer": "application",
+  "name": "Payment-Service",
+  "relationships": []
+}

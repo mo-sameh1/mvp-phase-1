@@ -1,0 +1,28 @@
+{
+  "archimate_type": "Application Component",
+  "confidence": "observed",
+  "documentation": "Application component that implements payment handling.",
+  "evidence": [
+    {
+      "excerpt": "PaymentClient delegates to PaymentService for payment submission.",
+      "locator": "/evidence/code/src/payment_client.py:10-19",
+      "source_type": "code"
+    }
+  ],
+  "id": "payment-client",
+  "layer": "application",
+  "name": "Payment Client",
+  "relationships": [
+    {
+      "evidence": [
+        {
+          "excerpt": "PaymentClient delegates to PaymentService for payment submission.",
+          "locator": "/evidence/code/src/payment_client.py:10-19",
+          "source_type": "code"
+        }
+      ],
+      "target_id": "paymentservice",
+      "type": "Realization"
+    }
+  ]
+}

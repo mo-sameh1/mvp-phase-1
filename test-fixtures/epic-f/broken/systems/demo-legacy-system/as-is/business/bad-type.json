@@ -1,0 +1,16 @@
+{
+  "archimate_type": "Application Component",
+  "confidence": "observed",
+  "documentation": "This deliberately uses an Application type in the Business layer.",
+  "evidence": [
+    {
+      "excerpt": "Broken fixture with wrong layer/type pair.",
+      "locator": "/evidence/broken.md:1",
+      "source_type": "fixture"
+    }
+  ],
+  "id": "bad-type",
+  "layer": "business",
+  "name": "Bad Type",
+  "relationships": []
+}
