@@ -1,0 +1,16 @@
+{
+  "id": "online-service-course-of-action",
+  "layer": "strategy",
+  "archimate_type": "Course of Action",
+  "name": "Online Service Channel",
+  "documentation": "Permit intake and review should move into an online service channel while preserving traceable review decisions.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "strategy",
+      "locator": "/evidence/strategy/strategy-brief.md:5-6",
+      "excerpt": "move permit intake and review into an online service channel"
+    }
+  ],
+  "relationships": []
+}

@@ -1,0 +1,16 @@
+{
+  "id": "case-handling-service",
+  "layer": "application",
+  "archimate_type": "Application Service",
+  "name": "Case Handling Service",
+  "documentation": "The CaseHandlingService is an externally visible service for submitting and tracking cases.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "source_code",
+      "locator": "/evidence/code/src/case_service.py:13-17",
+      "excerpt": "Externally visible service for submitting and tracking cases."
+    }
+  ],
+  "relationships": []
+}

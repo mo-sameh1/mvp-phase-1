@@ -1,0 +1,16 @@
+{
+  "id": "app-server-node",
+  "layer": "technology",
+  "archimate_type": "Node",
+  "name": "App Server Node",
+  "documentation": "The Terraform app_server resource represents the compute node for the application.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "iac",
+      "locator": "/evidence/infra/main.tf:1-6",
+      "excerpt": "resource \"aws_instance\" \"app_server\""
+    }
+  ],
+  "relationships": []
+}

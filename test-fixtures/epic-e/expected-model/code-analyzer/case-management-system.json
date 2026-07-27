@@ -1,0 +1,16 @@
+{
+  "id": "case-management-system",
+  "layer": "application",
+  "archimate_type": "Application Component",
+  "name": "Case Management System",
+  "documentation": "The CaseManagementSystem class coordinates permit case intake and review.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "source_code",
+      "locator": "/evidence/code/src/case_service.py:1-10",
+      "excerpt": "class CaseManagementSystem"
+    }
+  ],
+  "relationships": []
+}

@@ -1,0 +1,16 @@
+{
+  "id": "citizen-applicant",
+  "layer": "business",
+  "archimate_type": "Business Role",
+  "name": "Citizen Applicant",
+  "documentation": "The citizen applicant starts the permit request and provides required documents.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "interview_transcript",
+      "locator": "/evidence/business/interview-transcript.md:3-4",
+      "excerpt": "The citizen applicant starts the request and provides the required documents."
+    }
+  ],
+  "relationships": []
+}

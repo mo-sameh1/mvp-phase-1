@@ -1,0 +1,16 @@
+{
+  "id": "permit-review-process",
+  "layer": "business",
+  "archimate_type": "Business Process",
+  "name": "Permit Review Process",
+  "documentation": "The permit review process checks applications, validates documents, and approves or rejects permits.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "interview_transcript",
+      "locator": "/evidence/business/interview-transcript.md:6-8",
+      "excerpt": "The permit review process checks the application, validates the documents, and approves or rejects the permit."
+    }
+  ],
+  "relationships": []
+}

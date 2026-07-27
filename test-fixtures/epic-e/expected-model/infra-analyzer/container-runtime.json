@@ -1,0 +1,16 @@
+{
+  "id": "container-runtime",
+  "layer": "technology",
+  "archimate_type": "System Software",
+  "name": "Container Runtime",
+  "documentation": "The docker image entry indicates a Python container runtime used to run the case application.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "iac",
+      "locator": "/evidence/infra/main.tf:8-10",
+      "excerpt": "resource \"docker_image\" \"case_runtime\""
+    }
+  ],
+  "relationships": []
+}

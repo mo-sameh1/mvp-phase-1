@@ -1,0 +1,16 @@
+{
+  "id": "case-database-artifact",
+  "layer": "technology",
+  "archimate_type": "Artifact",
+  "name": "Case Database Artifact",
+  "documentation": "The SQL schema file is a deployable artifact defining the case_record table.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "db_schema",
+      "locator": "/evidence/code/schema/case.sql:1-6",
+      "excerpt": "CREATE TABLE case_record"
+    }
+  ],
+  "relationships": []
+}

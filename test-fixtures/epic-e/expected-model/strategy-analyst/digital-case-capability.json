@@ -1,0 +1,16 @@
+{
+  "id": "digital-case-capability",
+  "layer": "strategy",
+  "archimate_type": "Capability",
+  "name": "Digital Case Management Capability",
+  "documentation": "The organization needs a digital case management capability for permit handling.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "strategy",
+      "locator": "/evidence/strategy/strategy-brief.md:3",
+      "excerpt": "build a digital case management capability for permit handling"
+    }
+  ],
+  "relationships": []
+}

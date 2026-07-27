@@ -1,0 +1,16 @@
+{
+  "id": "case-record",
+  "layer": "application",
+  "archimate_type": "Data Object",
+  "name": "Case Record",
+  "documentation": "The case_record table stores citizen ID, status, and payload for permit cases.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "db_schema",
+      "locator": "/evidence/code/schema/case.sql:1-6",
+      "excerpt": "CREATE TABLE case_record"
+    }
+  ],
+  "relationships": []
+}

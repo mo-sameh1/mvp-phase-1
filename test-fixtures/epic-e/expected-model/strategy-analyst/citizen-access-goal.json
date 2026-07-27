@@ -1,0 +1,16 @@
+{
+  "id": "citizen-access-goal",
+  "layer": "motivation",
+  "archimate_type": "Goal",
+  "name": "Citizen Digital Access",
+  "documentation": "Citizens should be able to submit permit requests through an online channel without visiting a branch office.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "policy",
+      "locator": "/evidence/motivation/digital-access-policy.md:5-6",
+      "excerpt": "citizens should be able to submit permit requests through an online channel without visiting a branch office"
+    }
+  ],
+  "relationships": []
+}

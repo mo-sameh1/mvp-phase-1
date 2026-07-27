@@ -1,0 +1,52 @@
+{
+  "relationships": [
+    {
+      "source_id": "citizen-applicant",
+      "target_id": "permit-review-process",
+      "type": "Assignment",
+      "evidence": [
+        {
+          "source_type": "integration_notes",
+          "locator": "/evidence/integration/api-integrations.md:7",
+          "excerpt": "The Citizen Applicant is assigned to the Permit Review Process."
+        }
+      ]
+    },
+    {
+      "source_id": "case-management-system",
+      "target_id": "case-handling-service",
+      "type": "Realization",
+      "evidence": [
+        {
+          "source_type": "integration_notes",
+          "locator": "/evidence/integration/api-integrations.md:5",
+          "excerpt": "The Case Management System implements the Case Handling Service."
+        }
+      ]
+    },
+    {
+      "source_id": "case-handling-service",
+      "target_id": "permit-review-process",
+      "type": "Serving",
+      "evidence": [
+        {
+          "source_type": "integration_notes",
+          "locator": "/evidence/integration/api-integrations.md:3",
+          "excerpt": "The Case API exposes the Case Handling Service to the Permit Review Process."
+        }
+      ]
+    },
+    {
+      "source_id": "case-api",
+      "target_id": "case-handling-service",
+      "type": "Flow",
+      "evidence": [
+        {
+          "source_type": "integration_notes",
+          "locator": "/evidence/integration/api-integrations.md:9-10",
+          "excerpt": "the Case API sends case data to the Case Handling Service"
+        }
+      ]
+    }
+  ]
+}

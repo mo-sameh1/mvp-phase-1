@@ -1,0 +1,16 @@
+{
+  "id": "regulatory-compliance-driver",
+  "layer": "motivation",
+  "archimate_type": "Driver",
+  "name": "Regulatory Compliance Mandate",
+  "documentation": "A regulatory compliance mandate drives auditable digital access for permit services.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "policy",
+      "locator": "/evidence/motivation/digital-access-policy.md:3-4",
+      "excerpt": "regulatory compliance mandate requiring permit services to provide auditable digital access"
+    }
+  ],
+  "relationships": []
+}

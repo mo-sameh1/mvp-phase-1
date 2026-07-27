@@ -1,0 +1,16 @@
+{
+  "id": "case-api",
+  "layer": "application",
+  "archimate_type": "Application Interface",
+  "name": "Case API",
+  "documentation": "The OpenAPI definition exposes a POST endpoint for submitting permit cases.",
+  "confidence": "observed",
+  "evidence": [
+    {
+      "source_type": "api_spec",
+      "locator": "/evidence/code/openapi.yaml:1-8",
+      "excerpt": "POST /cases submits a permit case"
+    }
+  ],
+  "relationships": []
+}
