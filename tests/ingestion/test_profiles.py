@@ -1,3 +1,4 @@
+from agents.archimate_metamodel import list_element_types
 from agents.ingestion.profiles import (
     INGESTION_SUBAGENT_NAMES,
     build_ingestion_subagents,
@@ -37,31 +38,19 @@ def test_profiles_declare_required_evidence_roots_and_layers() -> None:
     )
 
 
-def test_profile_allowed_types_are_constrained_per_epic_e_role() -> None:
-    business = get_ingestion_profile("business-analyst")
-    code = get_ingestion_profile("code-analyzer")
-    infra = get_ingestion_profile("infra-analyzer")
+def test_profile_allowed_types_are_derived_from_epic_c_metamodel() -> None:
+    expected_layers_by_profile = {
+        "strategy-analyst": ("motivation", "strategy"),
+        "business-analyst": ("business",),
+        "code-analyzer": ("application",),
+        "infra-analyzer": ("technology",),
+    }
 
-    assert set(business.allowed_types_by_layer["business"]) == {
-        "Business Actor",
-        "Business Role",
-        "Business Process",
-        "Business Function",
-        "Business Service",
-    }
-    assert set(code.allowed_types_by_layer["application"]) == {
-        "Application Component",
-        "Application Service",
-        "Application Interface",
-        "Data Object",
-    }
-    assert set(infra.allowed_types_by_layer["technology"]) == {
-        "Node",
-        "Device",
-        "System Software",
-        "Technology Service",
-        "Artifact",
-    }
+    for profile_name, layers in expected_layers_by_profile.items():
+        profile = get_ingestion_profile(profile_name)
+        assert profile.allowed_types_by_layer == {
+            layer: tuple(list_element_types(layer)) for layer in layers
+        }
 
 
 def test_prompts_include_grounding_and_fail_closed_rules() -> None:

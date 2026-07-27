@@ -70,14 +70,6 @@ def _strategy_analyst() -> IngestionSubagentProfile:
 
 def _business_analyst() -> IngestionSubagentProfile:
     layers = ("business",)
-    allowed = _allowed(layers)
-    allowed["business"] = (
-        "Business Actor",
-        "Business Role",
-        "Business Process",
-        "Business Function",
-        "Business Service",
-    )
     return _profile(
         name="business-analyst",
         description=(
@@ -86,20 +78,12 @@ def _business_analyst() -> IngestionSubagentProfile:
         ),
         evidence_roots=("/evidence/business/",),
         output_layers=layers,
-        allowed_types_by_layer=allowed,
+        allowed_types_by_layer=_allowed(layers),
     )
 
 
 def _code_analyzer() -> IngestionSubagentProfile:
     layers = ("application",)
-    allowed = {
-        "application": (
-            "Application Component",
-            "Application Service",
-            "Data Object",
-            "Application Interface",
-        )
-    }
     return _profile(
         name="code-analyzer",
         description=(
@@ -107,22 +91,13 @@ def _code_analyzer() -> IngestionSubagentProfile:
         ),
         evidence_roots=("/evidence/code/",),
         output_layers=layers,
-        allowed_types_by_layer=allowed,
+        allowed_types_by_layer=_allowed(layers),
         require_line_locators=True,
     )
 
 
 def _infra_analyzer() -> IngestionSubagentProfile:
     layers = ("technology",)
-    allowed = {
-        "technology": (
-            "Node",
-            "Device",
-            "System Software",
-            "Technology Service",
-            "Artifact",
-        )
-    }
     return _profile(
         name="infra-analyzer",
         description=(
@@ -130,7 +105,7 @@ def _infra_analyzer() -> IngestionSubagentProfile:
         ),
         evidence_roots=("/evidence/infra/",),
         output_layers=layers,
-        allowed_types_by_layer=allowed,
+        allowed_types_by_layer=_allowed(layers),
         require_line_locators=True,
     )
 
