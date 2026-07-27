@@ -71,6 +71,8 @@ Verification:
 
 ### Epic E - Ingestion Subagents
 
+Status: implemented as source-grounded subagent contracts with deterministic fixture validation.
+
 Five subagents:
 
 - `strategy-analyst`
@@ -79,7 +81,21 @@ Five subagents:
 - `infra-analyzer`
 - `integration-mapper`
 
-All must output schema-valid, evidence-cited elements.
+Implemented behavior:
+
+- E1 reads strategy/motivation evidence and writes Motivation plus Strategy elements.
+- E2 reads business evidence and writes Business elements.
+- E3 reads code/schema/API evidence and writes Application elements with file/line evidence.
+- E4 reads infrastructure evidence and writes Technology elements with file/line evidence where applicable.
+- E5 appends evidence-cited relationships only when endpoint IDs exist and the Epic C metamodel
+  marks the source-target pair approved.
+- Unsupported relationship candidates are reported as skipped instead of being guessed into the model.
+
+Verification:
+
+- `make test`
+- `make epic-e-smoke`
+- `make epic-e-smoke EPIC_E_REPEAT=2`
 
 ### Epic F - Reconciler + Validator
 

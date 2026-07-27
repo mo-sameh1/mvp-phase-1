@@ -2,7 +2,9 @@
 
 Engineering repository for the 7bots.ai legacy modernization MVP. This repo is the application codebase. It is separate from the GitHub model repository that will store generated ArchiMate output.
 
-The current implementation covers Epics A and B: local tooling, Postgres, configuration, Alembic migrations, and data access functions.
+The current implementation covers Epics A-E: local tooling, Postgres, configuration,
+Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep Agent runtime
+scaffold, and source-grounded ingestion subagent contracts.
 
 ## Local Setup
 
@@ -118,6 +120,7 @@ make db-migrate    # alembic upgrade head
 make db-downgrade  # alembic downgrade -1
 make archimate-smoke
 make epic-d-smoke  # requires real LLM provider env
+make epic-e-smoke  # deterministic fixture, no live LLM call
 ```
 
 ## ArchiMate Metamodel Skill
@@ -174,3 +177,38 @@ code-analyzer
 infra-analyzer
 integration-mapper
 ```
+
+## Epic E Ingestion Subagents
+
+Epic E adds source-grounded ingestion profiles and deterministic validation helpers:
+
+```text
+agents/ingestion/
+test-fixtures/epic-e/
+```
+
+The real ingestion roles are:
+
+```text
+strategy-analyst      reads /evidence/strategy/ and /evidence/motivation/
+business-analyst      reads /evidence/business/
+code-analyzer         reads /evidence/code/
+infra-analyzer        reads /evidence/infra/
+integration-mapper    reads /evidence/integration/ and existing /systems/ output
+```
+
+Each accepted element must validate as `agents.schema.ModelElement`, use an allowed ArchiMate
+layer/type pair from Epic C, and include at least one evidence citation. Relationship candidates
+are appended only when both endpoint IDs already exist and Epic C establishes the source-target
+relationship pair. Unsupported candidates are reported as skipped.
+
+Run the deterministic fixture smoke test with:
+
+```bash
+make epic-e-smoke
+make epic-e-smoke EPIC_E_REPEAT=2
+```
+
+The committed fixture is synthetic and safe for git. Real client evidence should stay under
+`EVIDENCE_ROOT` outside git, and generated model JSON should be written to the separate model repo
+checkout configured by `MODEL_REPO_CHECKOUT`.

@@ -52,6 +52,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - The ArchiMate metamodel skill must ground later ingestion, reconciliation, and validation.
 - `agents/skills/archimate-metamodel/data/*.json` is the deterministic validator authority; `SKILL.md` is the agent-readable guide.
 - Relationship pairs not marked `review_status = "approved"` must fail closed until supported by the official ArchiMate 3.2 material or the accepted 7Bots ArchiMate learning PDF.
+- Epic E ingestion profiles live under `agents/ingestion/`; prompts may extract candidates, but schema validation, ArchiMate validation, target-ID checks, and path conventions decide what is accepted.
+- Ingestion writes one JSON file per element under `/systems/<system-id>/as-is/<layer>/<id>.json`.
+- The integration mapper may append relationships only to existing model elements and must report unsupported or unapproved candidates as skipped.
 - Reconciler MVP should be deterministic where specified by the task docs.
 - Validator failures should halt progression before GitHub PR creation.
 

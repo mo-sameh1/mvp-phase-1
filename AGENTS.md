@@ -11,13 +11,12 @@ This repository is the engineering codebase for the 7bots.ai MVP Phase 1 legacy 
 
 ## Current State
 
-Epics A-B are implemented and committed on `master`:
+Epics A-E are implemented on `master`.
 
-```text
-28f2d34 feat: scaffold epics a-b foundation
-```
-
-The current codebase contains the Python/DB foundation only. Agent ingestion, ArchiMate skills, GitHub PR automation, backend REST APIs, and frontend screens are intentionally not implemented yet.
+The current codebase contains the Python/DB foundation, ArchiMate metamodel skill, Deep Agent
+runtime scaffold, and Epic E ingestion subagent contracts plus deterministic fixture smoke tests.
+Reconciliation, GitHub PR automation, backend REST APIs, frontend screens, and the full end-to-end
+demo fixture are intentionally still future epics.
 
 ## Non-Negotiables
 
@@ -33,10 +32,11 @@ The current codebase contains the Python/DB foundation only. Agent ingestion, Ar
 uv sync
 make lint
 make test
+make archimate-smoke
+make epic-e-smoke
 make db-up
 uv run alembic upgrade head
 uv run alembic downgrade -1
 uv run alembic upgrade head
 make db-down
 ```
-
