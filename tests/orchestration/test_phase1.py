@@ -30,6 +30,7 @@ def test_run_as_is_ingestion_calls_pipeline_in_order(session, monkeypatch, tmp_p
         "commit_to_model",
         lambda settings, system_id, run_id: _commit(system_id, run_id),
     )
+
     def fake_open_pull_request(
         settings,
         session,
