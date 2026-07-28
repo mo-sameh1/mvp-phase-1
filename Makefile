@@ -6,13 +6,14 @@ POSTGRES_APP_DB ?= mvp_phase1
 EPIC_E_REPEAT ?= 1
 EPIC_F_ARGS ?=
 EPIC_G_ARGS ?=
+EPIC_H_ARGS ?=
 
 ifneq (,$(wildcard .env))
 include .env
 export
 endif
 
-.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke epic-e-smoke epic-f-smoke epic-g-smoke
+.PHONY: sync lint format test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke epic-e-smoke epic-f-smoke epic-g-smoke epic-h-smoke
 
 sync:
 	$(UV) sync
@@ -66,3 +67,6 @@ epic-f-smoke:
 
 epic-g-smoke:
 	$(UV) run python scripts/epic_g_smoke.py $(EPIC_G_ARGS)
+
+epic-h-smoke:
+	$(UV) run python scripts/epic_h_smoke.py $(EPIC_H_ARGS)
