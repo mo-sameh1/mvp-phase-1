@@ -86,6 +86,15 @@ def test_github_webhook_endpoint_rejects_missing_or_wrong_signature(session, tmp
     assert response.status_code == 401
 
 
+def test_health_check_endpoint() -> None:
+    client = TestClient(create_app())
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.json() == {"health": "OK"}
+
+
 def test_github_webhook_endpoint_accepts_valid_signature(session, monkeypatch, tmp_path) -> None:
     app = create_app()
     settings = Settings(

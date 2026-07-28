@@ -17,6 +17,10 @@ SETTINGS_DEPENDENCY = Depends(get_settings)
 def create_app() -> FastAPI:
     app = FastAPI(title="7bots MVP Phase 1")
 
+    @app.get("/")
+    async def health_check() -> dict[str, str]:
+        return {"health": "OK"}
+
     @app.post("/webhooks/github")
     async def github_webhook(
         request: Request,
