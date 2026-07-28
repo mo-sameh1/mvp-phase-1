@@ -83,3 +83,8 @@ Not allowed:
 - Log token values.
 - Commit generated evidence or client data unless explicitly instructed and sanitized.
 
+## Backend API
+
+Epic H frontend-facing endpoints require `X-API-Key` matching `BACKEND_API_KEY`. Keep this key
+separate from GitHub and LangSmith credentials. Health, OpenAPI docs, and GitHub webhooks use their
+own access patterns.

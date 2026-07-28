@@ -2,13 +2,10 @@
 
 Engineering repository for the 7bots.ai legacy modernization MVP. This repo is the application codebase. It is separate from the GitHub model repository that will store generated ArchiMate output.
 
-The current implementation covers Epics A-G: local tooling, Postgres, configuration,
+The current implementation covers Epics A-H: local tooling, Postgres, configuration,
 Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep Agent runtime
 scaffold, source-grounded ingestion subagent contracts, model assembly subagents, and GitHub PR
-automation.
-
-Epic H is the next implementation step: the async Phase 1 orchestrator and backend REST API used by
-the Epic I frontend.
+automation, plus the async Phase 1 backend API.
 
 ## Local Setup
 
@@ -67,6 +64,7 @@ MODEL_REPO_CHECKOUT=../mvp-phase1-model
 GITHUB_MODEL_REPO=mo-sameh1/mvp-phase1-model
 GITHUB_TOKEN=github_pat_...
 GITHUB_WEBHOOK_SECRET=...
+BACKEND_API_KEY=...
 ```
 
 ## LangSmith Smoke Test
@@ -128,6 +126,7 @@ make epic-d-smoke  # requires real LLM provider env
 make epic-e-smoke  # deterministic fixture, no live LLM call
 make epic-f-smoke  # live assembly subagent smoke, requires real LLM provider env
 make epic-g-smoke  # live GitHub PR smoke, requires DB and GitHub token
+make epic-h-smoke  # live API orchestration smoke, may create a real GitHub PR
 ```
 
 ## ArchiMate Metamodel Skill
@@ -277,3 +276,52 @@ Real webhook delivery requires configuring the model repo webhook in GitHub with
 
 The live Epic G recording/demo branch and merge commit were cleaned from the model repo after
 recording, and demo DB rows were cleared while preserving Alembic migration metadata.
+
+## Epic H Async Orchestration And API
+
+Epic H adds the backend entrypoint for Epic I:
+
+```text
+backend/orchestration/
+backend/api/
+```
+
+The Phase 1 orchestrator runs the live As-Is pipeline:
+
+```text
+Epic E ingestion -> Epic F reconciliation/validation -> Epic G branch + PR
+```
+
+If Epic F validation fails, the pipeline halts before GitHub commit/PR creation. Async execution uses
+FastAPI `BackgroundTasks` and the existing `jobs` table, with status transitions:
+
+```text
+queued -> running -> succeeded/failed
+```
+
+Frontend-facing endpoints require `X-API-Key: <BACKEND_API_KEY>`:
+
+```text
+POST /systems/{system_id}/ingest
+GET /jobs/{job_id}
+GET /systems/{system_id}/elements?layer=application
+GET /elements/{element_id}
+GET /systems/{system_id}/artifact-versions
+```
+
+Health, OpenAPI docs, and GitHub webhooks are separate from this API key contract:
+
+```text
+GET /                  # health check
+GET /docs              # generated FastAPI docs
+POST /webhooks/github  # GitHub HMAC signature auth
+```
+
+Run the live H smoke only when DB, provider, GitHub, model repo, evidence, and API key settings are
+ready:
+
+```bash
+make db-up
+make db-migrate
+make epic-h-smoke
+```

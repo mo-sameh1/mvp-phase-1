@@ -131,17 +131,26 @@ Current demo hygiene:
 - The live Epic G demo PR branch and merge commit were cleaned from the model repo after recording.
 - Demo application DB rows were cleared while preserving Alembic migration metadata.
 
-## Pending
-
 ### Epic H - Orchestration & Backend API
 
-Wraps the ingestion pipeline in background jobs and exposes API endpoints needed by the frontend.
+Status: implemented as the async Phase 1 backend entrypoint.
 
-Planned MVP contract:
+Implemented behavior:
 
-- H1 exposes `run_as_is_ingestion(system_id, evidence_path)` as the one-button Phase 1 pipeline.
-- H2 wraps H1 in FastAPI `BackgroundTasks` and updates the existing `jobs` table.
-- H3 exposes the five frontend-facing endpoints protected by a dedicated `X-API-Key` header.
+- H1 `run_as_is_ingestion`: runs live Epic E ingestion, Epic F assembly/validation, then Epic G
+  commit/PR automation only when validation passes.
+- H2 background runner: uses FastAPI `BackgroundTasks` and the existing `jobs` table with
+  `queued -> running -> succeeded/failed` status transitions.
+- H3 REST API: exposes the five frontend-facing endpoints protected by `X-API-Key`.
+- `GET /elements/{element_id}` reads full model JSON from the git-backed model repo using the
+  indexed commit/path instead of duplicating full content into Postgres.
+
+Verification:
+
+- `make test`
+- `make epic-h-smoke` is available for live API orchestration and may create a real GitHub PR.
+
+## Pending
 
 ### Epic I - Frontend Model Viewer
 

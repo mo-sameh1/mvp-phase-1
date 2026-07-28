@@ -42,12 +42,12 @@ The current repository foundation is only for the single-tenant Phase 1 MVP.
 
 ## MVP Technology Choices
 
-- Backend: Python 3.11+ with FastAPI later.
+- Backend: Python 3.11+ with FastAPI.
 - Dependency management: `uv`.
 - Database: PostgreSQL with SQLAlchemy ORM and Alembic migrations.
 - Agent framework later: `deepagents` / LangGraph / LangChain.
 - LLM provider for MVP smoke testing: configurable through LangChain. Supported providers are Ollama, Groq, and Anthropic.
 - Observability for MVP: LangSmith.
 - Model repo host for MVP: GitHub.
-- Job execution later: FastAPI `BackgroundTasks` plus the `jobs` table.
+- Job execution: FastAPI `BackgroundTasks` plus the `jobs` table.
 - Frontend later: React + Vite + TypeScript.

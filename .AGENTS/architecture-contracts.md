@@ -61,6 +61,13 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Epic G GitHub automation lives behind `backend/gitops/` adapters; keep local git, GitHub HTTP, PR body generation, webhook security, and model-index refresh modular.
 - GitHub webhook signature verification is mandatory before any approval-status change.
 - G1/G2 are idempotent for repeated `run_id` retries and must not duplicate branches, PRs, or artifact-version rows.
+- Epic H orchestration is the backend entrypoint for Phase 1 runs. It must halt before Epic G
+  commit/PR creation when Epic F validation fails.
+- Background job execution uses the existing `jobs` table for `queued`, `running`, `succeeded`, and
+  `failed` states. Crashes must become failed jobs with non-empty error messages.
+- Frontend-facing API endpoints are protected by `X-API-Key` and `BACKEND_API_KEY` for the MVP.
+- Full model element detail remains git-backed: `model_element_index` provides commit/path lookup,
+  while JSON element content is read from the model repo.
 
 ## Security Contract
 
@@ -68,3 +75,4 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - `.env.example` may contain placeholders only.
 - GitHub PAT for the model repo must be fine-grained and scoped only to that repo.
 - Future webhook endpoints must verify GitHub signatures before marking artifacts approved.
+- `BACKEND_API_KEY` is separate from `GITHUB_TOKEN`; do not reuse GitHub credentials for frontend API access.
