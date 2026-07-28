@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from backend.database.models import ModelElementIndex, utc_now
@@ -53,3 +53,16 @@ def list_model_elements(
     return list(
         session.scalars(statement.order_by(ModelElementIndex.layer, ModelElementIndex.name))
     )
+
+
+def delete_model_elements_except(
+    session: Session,
+    *,
+    system_id: str,
+    retained_ids: set[str],
+) -> None:
+    statement = delete(ModelElementIndex).where(ModelElementIndex.system_id == system_id)
+    if retained_ids:
+        statement = statement.where(ModelElementIndex.id.not_in(retained_ids))
+    session.execute(statement)
+    session.flush()
