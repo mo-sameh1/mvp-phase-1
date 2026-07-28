@@ -34,8 +34,6 @@ Verification already performed during implementation:
 - `uv run alembic upgrade head`
 - `psql` table listing as `mvp_app`
 
-## Pending
-
 ### Epic C - ArchiMate Knowledge Base
 
 Status: implemented as a conservative source-grounded metamodel foundation.
@@ -128,9 +126,22 @@ Verification:
 - `make test`
 - `make epic-g-smoke` created/reused a real GitHub PR when DB and GitHub env were available.
 
+Current demo hygiene:
+
+- The live Epic G demo PR branch and merge commit were cleaned from the model repo after recording.
+- Demo application DB rows were cleared while preserving Alembic migration metadata.
+
+## Pending
+
 ### Epic H - Orchestration & Backend API
 
 Wraps the ingestion pipeline in background jobs and exposes API endpoints needed by the frontend.
+
+Planned MVP contract:
+
+- H1 exposes `run_as_is_ingestion(system_id, evidence_path)` as the one-button Phase 1 pipeline.
+- H2 wraps H1 in FastAPI `BackgroundTasks` and updates the existing `jobs` table.
+- H3 exposes the five frontend-facing endpoints protected by a dedicated `X-API-Key` header.
 
 ### Epic I - Frontend Model Viewer
 

@@ -7,6 +7,9 @@ Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep A
 scaffold, source-grounded ingestion subagent contracts, model assembly subagents, and GitHub PR
 automation.
 
+Epic H is the next implementation step: the async Phase 1 orchestrator and backend REST API used by
+the Epic I frontend.
+
 ## Local Setup
 
 1. Install `uv` and Docker.
@@ -271,3 +274,6 @@ POST /webhooks/github
 
 Real webhook delivery requires configuring the model repo webhook in GitHub with the same
 `GITHUB_WEBHOOK_SECRET` value used by the backend.
+
+The live Epic G recording/demo branch and merge commit were cleaned from the model repo after
+recording, and demo DB rows were cleared while preserving Alembic migration metadata.
