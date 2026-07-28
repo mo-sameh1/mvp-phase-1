@@ -58,6 +58,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Epic F assembly uses real `reconciler` and `validator` subagents, but deterministic Python tools are the authority for merge and validation decisions.
 - Reconciler MVP merges only exact normalized-name duplicates within the same layer and ArchiMate type; ambiguous near-misses are review items, not auto-merges.
 - Validator reports are committed artifacts for later PR review. Hard validation failures should halt progression before GitHub PR creation.
+- Epic G GitHub automation lives behind `backend/gitops/` adapters; keep local git, GitHub HTTP, PR body generation, webhook security, and model-index refresh modular.
+- GitHub webhook signature verification is mandatory before any approval-status change.
+- G1/G2 are idempotent for repeated `run_id` retries and must not duplicate branches, PRs, or artifact-version rows.
 
 ## Security Contract
 

@@ -114,7 +114,19 @@ Verification:
 
 ### Epic G - Git Versioning & PR Automation
 
-Requires deterministic GitHub branch, commit, PR, and merge-webhook handling. Uses `artifact_versions.pr_number` and `artifact_versions.pr_url`.
+Status: implemented for GitHub-backed MVP model repo automation.
+
+- G1 `commit_to_model`: creates/reuses `feature/ingest-<system-id>-<run-id>`, stages only
+  `systems/<system-id>/`, commits, and pushes with token-backed HTTPS.
+- G2 `open_pull_request`: creates/reuses a PR against `main`, builds the PR body from Epic F reports,
+  and records a pending `artifact_versions` row with PR metadata.
+- G3 webhook handler: verifies GitHub HMAC signatures, approves merged PR artifacts idempotently,
+  and refreshes `model_element_index`.
+
+Verification:
+
+- `make test`
+- `make epic-g-smoke` created/reused a real GitHub PR when DB and GitHub env were available.
 
 ### Epic H - Orchestration & Backend API
 

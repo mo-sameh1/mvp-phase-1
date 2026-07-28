@@ -2,9 +2,10 @@
 
 Engineering repository for the 7bots.ai legacy modernization MVP. This repo is the application codebase. It is separate from the GitHub model repository that will store generated ArchiMate output.
 
-The current implementation covers Epics A-F: local tooling, Postgres, configuration,
+The current implementation covers Epics A-G: local tooling, Postgres, configuration,
 Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep Agent runtime
-scaffold, source-grounded ingestion subagent contracts, and model assembly subagents.
+scaffold, source-grounded ingestion subagent contracts, model assembly subagents, and GitHub PR
+automation.
 
 ## Local Setup
 
@@ -62,6 +63,7 @@ EVIDENCE_ROOT=reference/evidence
 MODEL_REPO_CHECKOUT=../mvp-phase1-model
 GITHUB_MODEL_REPO=mo-sameh1/mvp-phase1-model
 GITHUB_TOKEN=github_pat_...
+GITHUB_WEBHOOK_SECRET=...
 ```
 
 ## LangSmith Smoke Test
@@ -122,6 +124,7 @@ make archimate-smoke
 make epic-d-smoke  # requires real LLM provider env
 make epic-e-smoke  # deterministic fixture, no live LLM call
 make epic-f-smoke  # live assembly subagent smoke, requires real LLM provider env
+make epic-g-smoke  # live GitHub PR smoke, requires DB and GitHub token
 ```
 
 ## ArchiMate Metamodel Skill
@@ -238,3 +241,33 @@ Run the live smoke test after provider and LangSmith environment values are conf
 make epic-f-smoke
 make epic-f-smoke EPIC_F_ARGS="--include-broken-demo"
 ```
+
+## Epic G GitHub PR Automation
+
+Epic G adds deterministic GitHub model-repo automation:
+
+```text
+backend/gitops/
+backend/api/app.py
+```
+
+`commit_to_model` creates or reuses `feature/ingest-<system-id>-<run-id>`, commits only
+`systems/<system-id>/`, and pushes with token-backed HTTPS. `open_pull_request` creates or reuses a
+PR against `main`, builds the PR body from Epic F reports, and records the pending artifact version.
+
+Run the live smoke after Postgres is up and migrations are applied:
+
+```bash
+make db-up
+make db-migrate
+make epic-g-smoke
+```
+
+The smoke leaves the PR open for human review. The GitHub webhook endpoint is available at:
+
+```text
+POST /webhooks/github
+```
+
+Real webhook delivery requires configuring the model repo webhook in GitHub with the same
+`GITHUB_WEBHOOK_SECRET` value used by the backend.
