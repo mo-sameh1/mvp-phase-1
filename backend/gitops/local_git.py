@@ -103,3 +103,7 @@ def commit_all_for_path(runner: GitRunner, pathspec: str, message: str) -> str:
 
 def push_branch(runner: GitRunner, branch: str) -> None:
     runner.run("push", "-u", runner.auth_remote(), branch)
+
+
+def show_file_at_ref(runner: GitRunner, ref: str, path: str) -> str:
+    return runner.run("show", f"{ref}:{path}").stdout

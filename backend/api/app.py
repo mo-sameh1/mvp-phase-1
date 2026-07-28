@@ -5,6 +5,7 @@ import json
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from backend.api.routes import router as api_router
 from backend.config.settings import Settings, get_settings
 from backend.database.session import get_session
 from backend.gitops.webhook_security import verify_github_signature
@@ -16,6 +17,7 @@ SETTINGS_DEPENDENCY = Depends(get_settings)
 
 def create_app() -> FastAPI:
     app = FastAPI(title="7bots MVP Phase 1")
+    app.include_router(api_router)
 
     @app.get("/")
     async def health_check() -> dict[str, str]:
