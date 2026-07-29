@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ def validate_model_element_payload(payload: dict[str, Any]) -> ModelElement:
 @tool
 def write_model_element_tool(
     element: dict[str, Any],
+    run_id: str,
     systems_root: str | None = None,
     system_id: str | None = None,
 ) -> dict[str, Any]:
@@ -29,9 +31,13 @@ def write_model_element_tool(
     /systems from the task prompt. Do not pass /, /systems/, or a virtual DeepAgents path.
     """
     try:
+        resolved_systems_root, resolved_system_id = _resolve_tool_context(
+            systems_root=systems_root,
+            system_id=system_id,
+        )
         validated = validate_model_element_payload(element)
         if validated.relationships:
-            return {
+            result = {
                 "status": "rejected",
                 "written": False,
                 "reason": (
@@ -39,19 +45,32 @@ def write_model_element_tool(
                     "and use append_model_relationship_tool after all target IDs exist."
                 ),
             }
-        resolved_systems_root, resolved_system_id = _resolve_tool_context(
-            systems_root=systems_root,
-            system_id=system_id,
-        )
+            _record_ingestion_tool_event(
+                systems_root=resolved_systems_root,
+                system_id=resolved_system_id,
+                run_id=run_id,
+                tool_name="write_model_element_tool",
+                result=result,
+            )
+            return result
         path = write_model_element(resolved_systems_root, resolved_system_id, validated)
     except (ValidationError, ValueError) as exc:
-        return {
+        result = {
             "status": "rejected",
             "written": False,
             "reason": str(exc),
         }
+        if "resolved_systems_root" in locals() and "resolved_system_id" in locals():
+            _record_ingestion_tool_event(
+                systems_root=resolved_systems_root,
+                system_id=resolved_system_id,
+                run_id=run_id,
+                tool_name="write_model_element_tool",
+                result=result,
+            )
+        return result
 
-    return {
+    result = {
         "status": "written",
         "written": True,
         "id": validated.id,
@@ -59,12 +78,21 @@ def write_model_element_tool(
         "archimate_type": validated.archimate_type,
         "path": str(path),
     }
+    _record_ingestion_tool_event(
+        systems_root=resolved_systems_root,
+        system_id=resolved_system_id,
+        run_id=run_id,
+        tool_name="write_model_element_tool",
+        result=result,
+    )
+    return result
 
 
 @tool
 def append_model_relationship_tool(
     source_id: str,
     relationship: dict[str, Any],
+    run_id: str,
     systems_root: str | None = None,
     system_id: str | None = None,
 ) -> dict[str, Any]:
@@ -86,14 +114,23 @@ def append_model_relationship_tool(
             relationship=validated,
         )
     except (ValidationError, ValueError) as exc:
-        return {
+        result = {
             "status": "rejected",
             "written": False,
             "source_id": source_id,
             "reason": str(exc),
         }
+        if "resolved_systems_root" in locals() and "resolved_system_id" in locals():
+            _record_ingestion_tool_event(
+                systems_root=resolved_systems_root,
+                system_id=resolved_system_id,
+                run_id=run_id,
+                tool_name="append_model_relationship_tool",
+                result=result,
+            )
+        return result
 
-    return {
+    result = {
         "status": "written" if decision.written else "skipped",
         "written": decision.written,
         "source_id": decision.source_id,
@@ -102,6 +139,14 @@ def append_model_relationship_tool(
         "reason": decision.reason,
         "citation": decision.citation,
     }
+    _record_ingestion_tool_event(
+        systems_root=resolved_systems_root,
+        system_id=resolved_system_id,
+        run_id=run_id,
+        tool_name="append_model_relationship_tool",
+        result=result,
+    )
+    return result
 
 
 def _resolve_tool_context(
@@ -120,3 +165,19 @@ def _resolve_tool_context(
             "Omit systems_root or pass the exact .../systems value from the orchestration prompt."
         )
     return resolved_systems_root, system_id or settings.model_repo_system_id
+
+
+def _record_ingestion_tool_event(
+    *,
+    systems_root: Path,
+    system_id: str,
+    run_id: str,
+    tool_name: str,
+    result: dict[str, Any],
+) -> None:
+    if not run_id or "/" in run_id or "\\" in run_id or run_id in {".", ".."}:
+        raise ValueError("run_id must be a non-empty path-safe run identifier")
+    path = systems_root / system_id / "reports" / run_id / "ingestion-tool-events.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    event = {"tool": tool_name, **result}
+    path.open("a", encoding="utf-8").write(json.dumps(event, sort_keys=True) + "\n")

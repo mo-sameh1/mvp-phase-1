@@ -159,6 +159,7 @@ When ingestion is complete, reply with exactly: epic-h-ingestion-ok.
         config=_trace_config(system_id=system_id, run_id=run_id, step="ingestion"),
     )
     _require_marker(result, "epic-h-ingestion-ok")
+    _raise_on_rejected_ingestion_tools(paths.systems_root, system_id, run_id)
 
 
 def _run_assembly_agent(*, system_id: str, run_id: str, systems_root: Path) -> None:
@@ -236,6 +237,36 @@ def _validate_ingestion_outputs(systems_root: Path, system_id: str) -> None:
             "Epic E produced zero valid model elements; halting before assembly "
             "and GitHub PR creation."
         )
+
+
+def _raise_on_rejected_ingestion_tools(systems_root: Path, system_id: str, run_id: str) -> None:
+    path = systems_root / system_id / "reports" / run_id / "ingestion-tool-events.jsonl"
+    if not path.exists():
+        return
+
+    rejected_events = []
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise PipelineError(
+                f"Invalid Epic E ingestion tool event JSON at {path}:{line_number}: {exc}"
+            ) from exc
+        if event.get("status") == "rejected":
+            rejected_events.append(event)
+
+    if not rejected_events:
+        return
+
+    first = rejected_events[0]
+    tool = first.get("tool", "unknown tool")
+    reason = first.get("reason", "no reason supplied")
+    raise PipelineError(
+        "Epic E ingestion tool rejected a candidate; halting before assembly and GitHub PR "
+        f"creation. First rejection from {tool}: {reason}"
+    )
 
 
 def _require_marker(result: Any, marker: str) -> None:

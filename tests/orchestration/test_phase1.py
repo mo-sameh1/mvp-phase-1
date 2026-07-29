@@ -193,6 +193,46 @@ def test_ingestion_prompt_contains_strict_subagent_task_contract(
     assert "Never shorten, redact, or replace those values" in captured["prompt"]
 
 
+def test_ingestion_agent_rejected_tool_event_halts_pipeline(monkeypatch, tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    events = (
+        Path(settings.model_repo_checkout)
+        / "systems"
+        / "demo"
+        / "reports"
+        / "run-1"
+        / "ingestion-tool-events.jsonl"
+    )
+    events.parent.mkdir(parents=True)
+    events.write_text(
+        json.dumps(
+            {
+                "tool": "append_model_relationship_tool",
+                "status": "rejected",
+                "written": False,
+                "source_id": "case-handling-service",
+                "reason": "Relationship target id 'missing-process' does not exist",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    class FakeAgent:
+        def invoke(self, payload, config):
+            return {"messages": [{"content": "epic-h-ingestion-ok"}]}
+
+    monkeypatch.setattr(phase1, "create_ingestion_orchestrator", lambda: FakeAgent())
+
+    with pytest.raises(PipelineError, match="ingestion tool rejected"):
+        phase1._run_ingestion_agent(
+            system_id="demo",
+            run_id="run-1",
+            evidence_route="/evidence/",
+            settings=settings,
+        )
+
+
 def _settings(tmp_path: Path) -> Settings:
     evidence_root = tmp_path / "evidence"
     model_repo = tmp_path / "model"

@@ -21,6 +21,16 @@ class CaseManagementSystem:
         )
 
 
+class CaseHandlingService:
+    """Application service that accepts permit cases and returns status to callers."""
+
+    def __init__(self, system: CaseManagementSystem) -> None:
+        self.system = system
+
+    def submit_permit_case(self, applicant_id: str) -> PermitCase:
+        return self.system.submit_case(applicant_id)
+
+
 class AuditPublisher:
     """Publishes a case-submitted audit event for downstream reporting."""
 

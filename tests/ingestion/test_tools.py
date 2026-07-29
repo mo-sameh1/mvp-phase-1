@@ -13,6 +13,7 @@ def test_write_model_element_tool_validates_and_writes_json(tmp_path: Path) -> N
         {
             "systems_root": str(systems_root),
             "system_id": "demo",
+            "run_id": "run-1",
             "element": _element_payload(
                 element_id="case-handling-service",
                 layer="application",
@@ -25,6 +26,7 @@ def test_write_model_element_tool_validates_and_writes_json(tmp_path: Path) -> N
     assert result["written"] is True
     elements = load_model_elements(systems_root, "demo")
     assert elements["case-handling-service"].archimate_type == "Application Service"
+    assert "write_model_element_tool" in _event_log(systems_root)
 
 
 def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) -> None:
@@ -33,6 +35,7 @@ def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) 
         {
             "systems_root": str(systems_root),
             "system_id": "demo",
+            "run_id": "run-1",
             "element": _element_payload(
                 element_id="bad",
                 layer="business",
@@ -45,6 +48,7 @@ def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) 
     assert result["written"] is False
     assert "not valid for layer" in result["reason"]
     assert load_model_elements(systems_root, "demo") == {}
+    assert '"status": "rejected"' in _event_log(systems_root)
 
 
 def test_write_model_element_tool_rejects_inline_relationships(tmp_path: Path) -> None:
@@ -66,6 +70,7 @@ def test_write_model_element_tool_rejects_inline_relationships(tmp_path: Path) -
         {
             "systems_root": str(systems_root),
             "system_id": "demo",
+            "run_id": "run-1",
             "element": payload,
         }
     )
@@ -81,6 +86,7 @@ def test_write_model_element_tool_rejects_unsafe_systems_root() -> None:
         {
             "systems_root": "/",
             "system_id": "demo",
+            "run_id": "run-1",
             "element": _element_payload(
                 element_id="citizen-applicant",
                 layer="business",
@@ -113,6 +119,7 @@ def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path
         {
             "systems_root": str(systems_root),
             "system_id": "demo",
+            "run_id": "run-1",
             "source_id": source.id,
             "relationship": {
                 "target_id": target.id,
@@ -142,6 +149,7 @@ def test_append_model_relationship_tool_rejects_missing_target(tmp_path: Path) -
         {
             "systems_root": str(systems_root),
             "system_id": "demo",
+            "run_id": "run-1",
             "source_id": source.id,
             "relationship": {
                 "target_id": "missing-process",
@@ -154,6 +162,7 @@ def test_append_model_relationship_tool_rejects_missing_target(tmp_path: Path) -
     assert result["status"] == "rejected"
     assert result["written"] is False
     assert "does not exist" in result["reason"]
+    assert "missing-process" in _event_log(systems_root)
 
 
 def test_append_model_relationship_tool_skips_unsupported_pair(tmp_path: Path) -> None:
@@ -175,6 +184,7 @@ def test_append_model_relationship_tool_skips_unsupported_pair(tmp_path: Path) -
         {
             "systems_root": str(systems_root),
             "system_id": "demo",
+            "run_id": "run-1",
             "source_id": source.id,
             "relationship": {
                 "target_id": target.id,
@@ -187,6 +197,7 @@ def test_append_model_relationship_tool_skips_unsupported_pair(tmp_path: Path) -
     assert result["status"] == "skipped"
     assert result["written"] is False
     assert "not established" in result["reason"]
+    assert '"status": "skipped"' in _event_log(systems_root)
 
 
 def _element_payload(*, element_id: str, layer: str, archimate_type: str) -> dict:
@@ -214,3 +225,9 @@ def _evidence(excerpt: str = "Evidence excerpt.") -> dict:
         locator="/evidence/example.md:1",
         excerpt=excerpt,
     ).model_dump()
+
+
+def _event_log(systems_root: Path) -> str:
+    return (systems_root / "demo" / "reports" / "run-1" / "ingestion-tool-events.jsonl").read_text(
+        encoding="utf-8"
+    )

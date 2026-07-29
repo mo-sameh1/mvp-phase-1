@@ -11,7 +11,8 @@ Supported relationship candidates:
 
 Intentional invalid reference for Epic J:
 
-- Case Handling Service serves Archived Permit Review Process.
+- Case Handling Service, expected model id `case-handling-service`, serves Archived Permit Review
+  Process, expected missing target id `archived-permit-review-process`.
 
 `Archived Permit Review Process` is not described anywhere else in the fixture. The system must not
 invent it just to satisfy the relationship. The run should halt before GitHub PR creation, either
