@@ -132,6 +132,34 @@ make epic-g-smoke  # live GitHub PR smoke, requires DB and GitHub token
 make epic-h-smoke  # live API orchestration smoke, may create a real GitHub PR
 ```
 
+## Epic J Acceptance Fixture
+
+Epic J uses a committed synthetic fixture under:
+
+```text
+test-fixtures/epic-j/
+```
+
+Use `invalid/evidence/` first to prove the pipeline fails closed on a missing relationship target and
+does not open a PR. Use `approved/evidence/` for the full clean run that opens a PR, gets merged, and
+appears in the frontend after the GitHub webhook refreshes the index.
+
+For the invalid halt demo:
+
+```bash
+EVIDENCE_ROOT=test-fixtures/epic-j/invalid/evidence
+```
+
+For the approved end-to-end demo:
+
+```bash
+EVIDENCE_ROOT=test-fixtures/epic-j/approved/evidence
+```
+
+Trigger both runs from the frontend Run screen with the evidence-path field left empty so the backend
+uses `EVIDENCE_ROOT`. J2 should be run twice from a clean DB and clean model repo state for the
+reliability criterion.
+
 ## Frontend Model Viewer
 
 Epic I adds the React/Vite/TypeScript model viewer under `frontend/`:

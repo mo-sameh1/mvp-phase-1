@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Permit Case API
+  version: "1.0"
+paths:
+  /cases:
+    post:
+      summary: Submit a permit case
+      operationId: submitPermitCase
+      responses:
+        "201":
+          description: Case accepted for review
+  /cases/{caseId}:
+    get:
+      summary: Read permit case status
+      operationId: getPermitCaseStatus
+      responses:
+        "200":
+          description: Case status returned

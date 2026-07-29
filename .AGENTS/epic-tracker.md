@@ -175,7 +175,20 @@ Verification:
 
 ### Epic J - End-to-End Validation
 
-Synthetic demo evidence set and full acceptance test. This is the MVP finish line.
+Status: in progress.
+
+Implemented behavior:
+
+- J1 synthetic fixture: `test-fixtures/epic-j/` contains invalid and approved evidence variants for
+  the same fictional permit modernization system. Both variants cover the five ingestion subagent
+  source types and document duplicate, unsupported relationship, and invalid-reference edge cases.
+
+Manual work remaining:
+
+- J2 acceptance: run the invalid halt demo and the approved full flow from the frontend twice from a
+  clean DB/model repo state.
+- J3 runbook: finalize after J2 has been recorded and any manual discoveries have been folded back
+  into `README.md`.
 
 ## External Actions Still Needed
 

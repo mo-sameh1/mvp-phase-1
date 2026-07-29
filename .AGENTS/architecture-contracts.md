@@ -73,6 +73,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Frontend external links are limited to GitHub PR URLs and backend-provided model JSON URLs for
   now. Evidence locators are displayed as traceability text until a source-controlled evidence URL
   convention exists.
+- Epic J fixtures must remain synthetic, committed under `test-fixtures/`, and small enough for
+  repeated clean end-to-end demos. Use the `invalid` variant to prove fail-closed behavior before PR
+  creation and the `approved` variant for the human-review/merge/webhook path.
 
 ## Security Contract
 
