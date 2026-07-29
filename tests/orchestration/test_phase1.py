@@ -165,36 +165,6 @@ def test_trace_config_contains_run_metadata() -> None:
     }
 
 
-def test_run_ingestion_agent_delegates_to_python_owned_runner(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    settings = _settings(tmp_path)
-    calls = []
-
-    def fake_run_ingestion_subagents(**kwargs):
-        calls.append(kwargs)
-        return []
-
-    monkeypatch.setattr(phase1, "run_ingestion_subagents", fake_run_ingestion_subagents)
-
-    phase1._run_ingestion_agent(
-        system_id="demo",
-        run_id="run-1",
-        evidence_route="/evidence/",
-        settings=settings,
-    )
-
-    assert calls[0]["system_id"] == "demo"
-    assert calls[0]["run_id"] == "run-1"
-    assert calls[0]["evidence_route"] == "/evidence/"
-    assert calls[0]["systems_root"] == Path(settings.model_repo_checkout) / "systems"
-    assert calls[0]["settings"] == settings
-    assert calls[0]["trace_config_factory"]("strategy-analyst")["metadata"]["step"] == (
-        "ingestion:strategy-analyst"
-    )
-
-
 def _settings(tmp_path: Path) -> Settings:
     evidence_root = tmp_path / "evidence"
     model_repo = tmp_path / "model"

@@ -29,35 +29,7 @@ def test_create_base_agent_passes_runtime_contract(monkeypatch, tmp_path):
     assert calls["skills"] == ["/skills/"]
     assert calls["name"] == "phase1-base-agent"
     assert calls["subagents"] is None
-    assert calls["tools"] is None
     assert calls["permissions"][0].mode == "deny"
-
-
-def test_create_base_agent_accepts_direct_tools_and_name(monkeypatch, tmp_path):
-    calls = {}
-    tool = object()
-
-    def fake_create_deep_agent(**kwargs):
-        calls.update(kwargs)
-        return "agent"
-
-    monkeypatch.setattr(deep_agent, "build_chat_model", lambda: object())
-    monkeypatch.setattr(deep_agent, "create_deep_agent", fake_create_deep_agent)
-
-    settings = Settings(
-        evidence_root=str(tmp_path / "evidence"),
-        model_repo_checkout=str(tmp_path / "model-repo"),
-    )
-
-    agent = deep_agent.create_base_agent(
-        settings=settings,
-        tools=[tool],
-        name="direct-subagent",
-    )
-
-    assert agent == "agent"
-    assert calls["tools"] == [tool]
-    assert calls["name"] == "direct-subagent"
 
 
 def test_placeholder_subagent_names_match_epic_e_contract():

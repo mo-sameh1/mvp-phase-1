@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from agents.assembly.orchestrator import create_assembly_orchestrator
 from agents.ingestion.model_io import validate_model_tree
-from agents.ingestion.runner import run_ingestion_subagents
+from agents.ingestion.orchestrator import create_ingestion_orchestrator
 from agents.runtime.filesystem import RuntimePaths, resolve_runtime_path
 from backend.config.settings import Settings
 from backend.gitops.operations import (
@@ -120,18 +120,37 @@ def _run_ingestion_agent(
     settings: Settings,
 ) -> None:
     paths = RuntimePaths.from_settings(settings)
-    run_ingestion_subagents(
-        system_id=system_id,
-        run_id=run_id,
-        evidence_route=evidence_route,
-        systems_root=paths.systems_root,
-        settings=settings,
-        trace_config_factory=lambda subagent_name: _trace_config(
-            system_id=system_id,
-            run_id=run_id,
-            step=f"ingestion:{subagent_name}",
-        ),
+    prompt = f"""
+Run Epic E ingestion for this Phase 1 As-Is job.
+
+Create and maintain a todo list with these steps:
+1. Run strategy-analyst.
+2. Run business-analyst.
+3. Run code-analyzer.
+4. Run infra-analyzer.
+5. Run integration-mapper last.
+
+Inputs:
+- system_id: {system_id}
+- run_id: {run_id}
+- evidence root: {evidence_route}
+- writable model output: /systems/{system_id}/as-is/
+- deterministic systems_root for ingestion tools: {paths.systems_root}
+
+Use the task tool for every ingestion subagent. The first four may run independently, but the
+integration-mapper must run after element extraction. All accepted model files must be written under
+/systems/{system_id}/as-is/<layer>/ by calling write_model_element_tool. Relationship updates must
+be made by calling append_model_relationship_tool. Do not use write_file or edit_file for model
+JSON. Stop and report an error if a schema, evidence, path, or ArchiMate rule cannot be satisfied.
+
+When ingestion is complete, reply with exactly: epic-h-ingestion-ok.
+"""
+    agent = create_ingestion_orchestrator()
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": prompt}]},
+        config=_trace_config(system_id=system_id, run_id=run_id, step="ingestion"),
     )
+    _require_marker(result, "epic-h-ingestion-ok")
 
 
 def _run_assembly_agent(*, system_id: str, run_id: str, systems_root: Path) -> None:

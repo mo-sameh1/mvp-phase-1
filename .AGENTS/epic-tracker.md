@@ -137,8 +137,8 @@ Status: implemented as the async Phase 1 backend entrypoint.
 
 Implemented behavior:
 
-- H1 `run_as_is_ingestion`: runs live Epic E ingestion in Python-owned subagent order, then Epic F
-  assembly/validation, then Epic G commit/PR automation only when validation passes.
+- H1 `run_as_is_ingestion`: runs live Epic E ingestion, Epic F assembly/validation, then Epic G
+  commit/PR automation only when validation passes.
 - H2 background runner: uses FastAPI `BackgroundTasks` and the existing `jobs` table with
   `queued -> running -> succeeded/failed` status transitions.
 - H3 REST API: exposes the five frontend-facing endpoints protected by `X-API-Key`.

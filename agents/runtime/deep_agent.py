@@ -6,7 +6,6 @@ from typing import Any
 from deepagents import create_deep_agent
 from deepagents.backends.protocol import BackendProtocol
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.tools import BaseTool
 
 from agents.runtime.filesystem import (
     RuntimePaths,
@@ -32,20 +31,17 @@ def create_base_agent(
     model: str | BaseChatModel | None = None,
     backend: BackendProtocol | None = None,
     subagents: Sequence[dict[str, Any]] | None = None,
-    tools: Sequence[BaseTool | Any] | None = None,
     settings: Settings | None = None,
     system_prompt: str = BASE_SYSTEM_PROMPT,
-    name: str = "phase1-base-agent",
 ):
     paths = RuntimePaths.from_settings(settings)
     ensure_runtime_directories(paths)
     return create_deep_agent(
         model=model or build_chat_model(),
-        tools=tools,
         backend=backend or build_runtime_backend(paths),
         skills=[ARCHIMATE_SKILLS_PATH],
         permissions=filesystem_permissions(),
         subagents=subagents,
         system_prompt=system_prompt,
-        name=name,
+        name="phase1-base-agent",
     )

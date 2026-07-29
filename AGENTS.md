@@ -15,9 +15,8 @@ Epics A-I are implemented on `master`.
 
 The current codebase contains the Python/DB foundation, ArchiMate metamodel skill, Deep Agent
 runtime scaffold, Epic E ingestion subagent contracts, Epic F assembly subagents, and Epic G GitHub
-PR automation. Epic H adds the async Phase 1 backend API and owns live ingestion order in Python
-while invoking the real Epic E subagents. Epic I adds the React/Vite model viewer. The full
-end-to-end demo fixture is intentionally still a future epic.
+PR automation. Epic H adds the async Phase 1 backend API. Epic I adds the React/Vite model viewer.
+The full end-to-end demo fixture is intentionally still a future epic.
 
 ## Non-Negotiables
 
