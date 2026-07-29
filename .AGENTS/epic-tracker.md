@@ -118,8 +118,9 @@ Status: implemented for GitHub-backed MVP model repo automation.
   `systems/<system-id>/`, commits, and pushes with token-backed HTTPS.
 - G2 `open_pull_request`: creates/reuses a PR against `main`, builds the PR body from Epic F reports,
   and records a pending `artifact_versions` row with PR metadata.
-- G3 webhook handler: verifies GitHub HMAC signatures, approves merged PR artifacts idempotently,
-  and refreshes `model_element_index`.
+- G3 webhook handler: verifies GitHub HMAC signatures, maps closed-unmerged PRs to `rejected`,
+  maps reopened rejected PRs back to `pending`, approves merged PR artifacts idempotently, and
+  refreshes `model_element_index` only after approval.
 
 Verification:
 

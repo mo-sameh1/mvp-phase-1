@@ -64,6 +64,17 @@ def test_handle_pull_request_webhook_approves_artifact_idempotently(
 
 
 def test_handle_pull_request_webhook_ignores_non_merged_event(session, tmp_path) -> None:
+    create_legacy_system(session, system_id="demo", name="Demo")
+    artifact = create_artifact_version(
+        session,
+        system_id="demo",
+        commit_sha="sha",
+        phase="as-is",
+        author_type="agent",
+        run_id="run-1",
+        pr_number=42,
+        pr_url="https://github.com/example/repo/pull/42",
+    )
     settings = Settings(model_repo_checkout=str(tmp_path), github_model_repo="example/repo")
 
     result = webhooks.handle_pull_request_webhook(
@@ -72,8 +83,73 @@ def test_handle_pull_request_webhook_ignores_non_merged_event(session, tmp_path)
         settings,
     )
 
-    assert result.status == "ignored"
+    assert result.status == "rejected"
     assert result.approved is False
+    assert get_artifact_version(session, artifact.id).approval_status == "rejected"
+
+
+def test_handle_pull_request_webhook_reopens_rejected_artifact(session, tmp_path) -> None:
+    create_legacy_system(session, system_id="demo", name="Demo")
+    artifact = create_artifact_version(
+        session,
+        system_id="demo",
+        commit_sha="sha",
+        phase="as-is",
+        author_type="agent",
+        run_id="run-1",
+        approval_status="rejected",
+        pr_number=42,
+        pr_url="https://github.com/example/repo/pull/42",
+    )
+    settings = Settings(model_repo_checkout=str(tmp_path), github_model_repo="example/repo")
+
+    result = webhooks.handle_pull_request_webhook(
+        session,
+        {"action": "reopened", "pull_request": {"number": 42, "merged": False}},
+        settings,
+    )
+
+    assert result.status == "pending"
+    assert result.approved is False
+    assert get_artifact_version(session, artifact.id).approval_status == "pending"
+
+
+def test_handle_pull_request_webhook_keeps_approved_artifact_final(
+    session,
+    monkeypatch,
+    tmp_path,
+) -> None:
+    create_legacy_system(session, system_id="demo", name="Demo")
+    artifact = create_artifact_version(
+        session,
+        system_id="demo",
+        commit_sha="sha",
+        phase="as-is",
+        author_type="agent",
+        run_id="run-1",
+        approval_status="approved",
+        pr_number=42,
+        pr_url="https://github.com/example/repo/pull/42",
+    )
+    monkeypatch.setattr(webhooks, "refresh_model_element_index", lambda *args, **kwargs: 0)
+    settings = Settings(model_repo_checkout=str(tmp_path), github_model_repo="example/repo")
+
+    closed = webhooks.handle_pull_request_webhook(
+        session,
+        {"action": "closed", "pull_request": {"number": 42, "merged": False}},
+        settings,
+    )
+    reopened = webhooks.handle_pull_request_webhook(
+        session,
+        {"action": "reopened", "pull_request": {"number": 42, "merged": False}},
+        settings,
+    )
+    merged = webhooks.handle_pull_request_webhook(session, _merged_payload(), settings)
+
+    assert closed.status == "already_approved"
+    assert reopened.status == "already_approved"
+    assert merged.status == "already_approved"
+    assert get_artifact_version(session, artifact.id).approval_status == "approved"
 
 
 def test_github_webhook_endpoint_rejects_missing_or_wrong_signature(session, tmp_path) -> None:

@@ -304,6 +304,12 @@ backend/api/app.py
 `commit_to_model` creates or reuses `feature/ingest-<system-id>-<run-id>`, commits only
 `systems/<system-id>/`, and pushes with token-backed HTTPS. `open_pull_request` creates or reuses a
 PR against `main`, builds the PR body from Epic F reports, and records the pending artifact version.
+The artifact approval status follows PR lifecycle webhooks:
+
+- Open PR: `pending`
+- Closed without merge: `rejected`
+- Reopened after rejection: `pending`
+- Merged: `approved` and final for the MVP
 
 Run the live smoke after Postgres is up and migrations are applied:
 
@@ -320,7 +326,9 @@ POST /webhooks/github
 ```
 
 Real webhook delivery requires configuring the model repo webhook in GitHub with the same
-`GITHUB_WEBHOOK_SECRET` value used by the backend.
+`GITHUB_WEBHOOK_SECRET` value used by the backend. For local demos, expose the backend with
+Cloudflare Tunnel or another HTTPS tunnel and configure GitHub to send PR events to
+`https://<your-tunnel-domain>/webhooks/github`.
 
 The live Epic G recording/demo branch and merge commit were cleaned from the model repo after
 recording, and demo DB rows were cleared while preserving Alembic migration metadata.

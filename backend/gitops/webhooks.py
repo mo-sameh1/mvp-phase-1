@@ -26,13 +26,54 @@ def handle_pull_request_webhook(
 ) -> WebhookResult:
     action = payload.get("action")
     pull_request = payload.get("pull_request") or {}
-    if action != "closed" or pull_request.get("merged") is not True:
+    if action not in {"closed", "reopened"}:
         return WebhookResult(status="ignored", approved=False)
 
     pr_number = int(pull_request["number"])
     artifact = get_artifact_version_by_pr(session, pr_number=pr_number)
     if artifact is None:
         return WebhookResult(status="ignored_no_artifact", approved=False)
+
+    if action == "reopened":
+        if artifact.approval_status == "approved":
+            return WebhookResult(
+                status="already_approved",
+                approved=True,
+                artifact_version_id=artifact.id,
+            )
+        if artifact.approval_status == "pending":
+            return WebhookResult(
+                status="already_pending",
+                approved=False,
+                artifact_version_id=artifact.id,
+            )
+        update_artifact_version(session, artifact.id, approval_status="pending")
+        return WebhookResult(
+            status="pending",
+            approved=False,
+            artifact_version_id=artifact.id,
+        )
+
+    if pull_request.get("merged") is not True:
+        if artifact.approval_status == "approved":
+            return WebhookResult(
+                status="already_approved",
+                approved=True,
+                artifact_version_id=artifact.id,
+            )
+        if artifact.approval_status == "rejected":
+            return WebhookResult(
+                status="already_rejected",
+                approved=False,
+                artifact_version_id=artifact.id,
+            )
+        update_artifact_version(session, artifact.id, approval_status="rejected")
+        return WebhookResult(
+            status="rejected",
+            approved=False,
+            artifact_version_id=artifact.id,
+        )
+
     if artifact.approval_status == "approved":
         return WebhookResult(
             status="already_approved",
