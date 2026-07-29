@@ -165,6 +165,34 @@ def test_trace_config_contains_run_metadata() -> None:
     }
 
 
+def test_ingestion_prompt_contains_strict_subagent_task_contract(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    captured = {}
+
+    class FakeAgent:
+        def invoke(self, payload, config):
+            captured["prompt"] = payload["messages"][0]["content"]
+            captured["config"] = config
+            return {"messages": [{"content": "epic-h-ingestion-ok"}]}
+
+    monkeypatch.setattr(phase1, "create_ingestion_orchestrator", lambda: FakeAgent())
+
+    phase1._run_ingestion_agent(
+        system_id="demo",
+        run_id="as-is-12345678-abcd-4321-abcd-123456789abc",
+        evidence_route="/evidence/",
+        settings=settings,
+    )
+
+    assert "Exact subagent task contract" in captured["prompt"]
+    assert "as-is-12345678-abcd-4321-abcd-123456789abc" in captured["prompt"]
+    assert str(Path(settings.model_repo_checkout) / "systems") in captured["prompt"]
+    assert "Never shorten, redact, or replace those values" in captured["prompt"]
+
+
 def _settings(tmp_path: Path) -> Settings:
     evidence_root = tmp_path / "evidence"
     model_repo = tmp_path / "model"

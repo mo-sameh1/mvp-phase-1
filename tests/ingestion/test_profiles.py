@@ -62,6 +62,8 @@ def test_prompts_include_grounding_and_fail_closed_rules() -> None:
         assert "Reject and skip any candidate that lacks a specific evidence excerpt" in prompt
         assert "Never invent element types, relationship types, IDs" in prompt
         assert "Never call write_file or edit_file" in prompt
+        assert "Preserve the exact system_id, run_id, and systems_root" in prompt
+        assert "Do not abbreviate UUIDs" in prompt
 
     assert "line or line range" in get_ingestion_profile("code-analyzer").system_prompt
     assert "line or line range" in get_ingestion_profile("infra-analyzer").system_prompt

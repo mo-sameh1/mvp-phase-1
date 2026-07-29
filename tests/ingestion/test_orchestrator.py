@@ -17,6 +17,8 @@ def test_create_ingestion_orchestrator_wires_real_epic_e_subagents(monkeypatch) 
     assert [subagent["name"] for subagent in calls["subagents"]] == INGESTION_SUBAGENT_NAMES
     assert "strategy-analyst" in calls["system_prompt"]
     assert "integration-mapper must run last" in calls["system_prompt"]
+    assert "write_todos" in calls["system_prompt"]
+    assert "Do not shorten UUIDs or replace paths" in calls["system_prompt"]
 
 
 def test_ingestion_subagent_order_matches_epic_e_sequence() -> None:

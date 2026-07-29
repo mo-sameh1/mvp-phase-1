@@ -199,6 +199,9 @@ def _system_prompt(
         "Tool contract:\n"
         "- Call append_model_relationship_tool for every accepted relationship candidate.\n"
         "- Pass relationship as an object with target_id, type, and evidence.\n"
+        "- Copy system_id and systems_root exactly from the task prompt when passing them.\n"
+        "- Never invent operational paths. systems_root must be the exact absolute path ending "
+        "in /systems from the task prompt, never / or /systems/.\n"
         "- If the tool returns skipped or rejected, report the candidate in your summary and do "
         "not retry by writing files manually.\n"
         "- Never call write_file or edit_file for relationship updates."
@@ -207,6 +210,9 @@ def _system_prompt(
             "Tool contract:\n"
             "- Call write_model_element_tool for every accepted element candidate.\n"
             "- Pass element as an object, not as a markdown block or raw file content.\n"
+            "- Copy system_id and systems_root exactly from the task prompt when passing them.\n"
+            "- Never invent operational paths. systems_root must be the exact absolute path ending "
+            "in /systems from the task prompt, never / or /systems/.\n"
             "- The deterministic tool validates agents.schema.ModelElement and serializes JSON.\n"
             "- If the tool returns rejected, fix the candidate only when the evidence supports the "
             "fix; otherwise report it as skipped.\n"
@@ -221,6 +227,12 @@ Read only these evidence roots: {", ".join(evidence_roots)}.
 Allowed output layers: {", ".join(output_layers)}.
 Allowed ArchiMate element types:
 {chr(10).join(allowed_lines)}
+
+Execution discipline:
+- This subagent task is narrow. Do not call write_todos unless the task prompt explicitly asks
+  this subagent to create a todo list.
+- Preserve the exact system_id, run_id, and systems_root values from the task prompt in tool calls.
+- Do not abbreviate UUIDs, rewrite paths, or replace absolute paths with virtual paths.
 
 Output must conform to agents.schema.ModelElement:
 - id: stable lowercase slug

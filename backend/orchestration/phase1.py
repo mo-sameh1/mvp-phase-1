@@ -137,6 +137,14 @@ Inputs:
 - writable model output: /systems/{system_id}/as-is/
 - deterministic systems_root for ingestion tools: {paths.systems_root}
 
+Exact subagent task contract:
+- Every task description must include the full system_id: {system_id}
+- Every task description must include the full run_id: {run_id}
+- Every task description must include this exact systems_root: {paths.systems_root}
+- Never shorten, redact, or replace those values.
+- Tell each subagent to copy systems_root exactly into write_model_element_tool or
+  append_model_relationship_tool calls.
+
 Use the task tool for every ingestion subagent. The first four may run independently, but the
 integration-mapper must run after element extraction. All accepted model files must be written under
 /systems/{system_id}/as-is/<layer>/ by calling write_model_element_tool. Relationship updates must

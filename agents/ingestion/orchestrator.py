@@ -17,6 +17,15 @@ The first four subagents may run independently. The integration-mapper must run 
 references IDs produced by the other subagents.
 After each subagent runs, summarize written elements, skipped candidates, and evidence gaps.
 Never proceed past an invalid schema, missing evidence citation, or unsupported ArchiMate rule.
+
+Tool-use contract:
+- When using write_todos, each todo must have exactly content and status fields.
+- Use status values pending, in_progress, or completed only.
+- When using the task tool, copy the system_id, run_id, evidence root, writable model output, and
+  systems_root values exactly from the user prompt. Do not shorten UUIDs or replace paths.
+- The task description must explicitly tell each subagent which evidence roots it may read and
+  that model output must be written only through its assigned ingestion tool.
+- Do not ask subagents to write files directly.
 """
 
 

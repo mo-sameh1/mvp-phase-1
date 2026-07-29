@@ -23,7 +23,11 @@ def write_model_element_tool(
     systems_root: str | None = None,
     system_id: str | None = None,
 ) -> dict[str, Any]:
-    """Validate and write one agents.schema.ModelElement JSON file."""
+    """Validate and write one agents.schema.ModelElement JSON file.
+
+    systems_root is optional, but when supplied it must be the exact absolute path ending in
+    /systems from the task prompt. Do not pass /, /systems/, or a virtual DeepAgents path.
+    """
     try:
         validated = validate_model_element_payload(element)
         if validated.relationships:
@@ -64,7 +68,11 @@ def append_model_relationship_tool(
     systems_root: str | None = None,
     system_id: str | None = None,
 ) -> dict[str, Any]:
-    """Validate and append one evidence-cited relationship to an existing model element."""
+    """Validate and append one evidence-cited relationship to an existing model element.
+
+    systems_root is optional, but when supplied it must be the exact absolute path ending in
+    /systems from the task prompt. Do not pass /, /systems/, or a virtual DeepAgents path.
+    """
     try:
         validated = RelationshipRef(**relationship)
         resolved_systems_root, resolved_system_id = _resolve_tool_context(
