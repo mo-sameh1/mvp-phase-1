@@ -61,6 +61,7 @@ def test_prompts_include_grounding_and_fail_closed_rules() -> None:
         assert "agents.schema.ModelElement" in prompt
         assert "Reject and skip any candidate that lacks a specific evidence excerpt" in prompt
         assert "Never invent element types, relationship types, IDs" in prompt
+        assert "Never call write_file or edit_file" in prompt
 
     assert "line or line range" in get_ingestion_profile("code-analyzer").system_prompt
     assert "line or line range" in get_ingestion_profile("infra-analyzer").system_prompt
@@ -77,3 +78,10 @@ def test_build_ingestion_subagents_returns_deep_agent_ready_profiles() -> None:
         assert subagent["skills"] == ["/skills/"]
         assert subagent["system_prompt"]
         assert subagent["description"]
+        assert subagent["tools"]
+
+    assert [tool.name for tool in subagents[0]["tools"]] == ["write_model_element_tool"]
+    assert [tool.name for tool in subagents[1]["tools"]] == ["write_model_element_tool"]
+    assert [tool.name for tool in subagents[2]["tools"]] == ["write_model_element_tool"]
+    assert [tool.name for tool in subagents[3]["tools"]] == ["write_model_element_tool"]
+    assert [tool.name for tool in subagents[4]["tools"]] == ["append_model_relationship_tool"]

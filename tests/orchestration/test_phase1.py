@@ -13,6 +13,7 @@ from backend.orchestration.phase1 import PipelineError, run_as_is_ingestion
 
 def test_run_as_is_ingestion_calls_pipeline_in_order(session, monkeypatch, tmp_path: Path) -> None:
     settings = _settings(tmp_path)
+    _write_model_element(settings, "demo")
     _write_report(settings, "demo", "run-1", validation_status="passed")
     calls = []
     monkeypatch.setattr(
@@ -61,6 +62,7 @@ def test_run_as_is_ingestion_stops_before_git_when_validation_fails(
     tmp_path: Path,
 ) -> None:
     settings = _settings(tmp_path)
+    _write_model_element(settings, "demo")
     _write_report(settings, "demo", "run-1", validation_status="failed")
     monkeypatch.setattr(phase1, "_run_ingestion_agent", lambda **kwargs: None)
     monkeypatch.setattr(phase1, "_run_assembly_agent", lambda **kwargs: None)
@@ -72,6 +74,61 @@ def test_run_as_is_ingestion_stops_before_git_when_validation_fails(
     )
 
     with pytest.raises(PipelineError, match="validation failed"):
+        run_as_is_ingestion(
+            "demo",
+            str(Path(settings.evidence_root)),
+            run_id="run-1",
+            settings=settings,
+            session=session,
+        )
+
+    assert git_calls == []
+
+
+def test_run_as_is_ingestion_stops_before_assembly_when_ingestion_writes_no_elements(
+    session,
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    monkeypatch.setattr(phase1, "_run_ingestion_agent", lambda **kwargs: None)
+    assembly_calls = []
+    monkeypatch.setattr(
+        phase1,
+        "_run_assembly_agent",
+        lambda **kwargs: assembly_calls.append(kwargs["run_id"]),
+    )
+
+    with pytest.raises(PipelineError, match="zero valid model elements"):
+        run_as_is_ingestion(
+            "demo",
+            str(Path(settings.evidence_root)),
+            run_id="run-1",
+            settings=settings,
+            session=session,
+        )
+
+    assert assembly_calls == []
+
+
+def test_run_as_is_ingestion_stops_before_git_when_validation_has_zero_elements(
+    session,
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    _write_model_element(settings, "demo")
+    _write_report(settings, "demo", "run-1", validation_status="passed", total_elements=0)
+    monkeypatch.setattr(phase1, "_run_ingestion_agent", lambda **kwargs: None)
+    monkeypatch.setattr(phase1, "_run_assembly_agent", lambda **kwargs: None)
+    git_calls = []
+    monkeypatch.setattr(
+        phase1,
+        "commit_to_model",
+        lambda settings, system_id, run_id: git_calls.append(run_id),
+    )
+
+    with pytest.raises(PipelineError, match="zero valid model elements"):
         run_as_is_ingestion(
             "demo",
             str(Path(settings.evidence_root)),
@@ -128,6 +185,7 @@ def _write_report(
     run_id: str,
     *,
     validation_status: str,
+    total_elements: int = 1,
 ) -> None:
     report_dir = Path(settings.model_repo_checkout) / "systems" / system_id / "reports" / run_id
     report_dir.mkdir(parents=True)
@@ -136,7 +194,40 @@ def _write_report(
         encoding="utf-8",
     )
     (report_dir / "validation-report.json").write_text(
-        json.dumps({"status": validation_status}),
+        json.dumps({"status": validation_status, "total_elements": total_elements}),
+        encoding="utf-8",
+    )
+
+
+def _write_model_element(settings: Settings, system_id: str) -> None:
+    model_path = (
+        Path(settings.model_repo_checkout)
+        / "systems"
+        / system_id
+        / "as-is"
+        / "business"
+        / "permit-review-process.json"
+    )
+    model_path.parent.mkdir(parents=True)
+    model_path.write_text(
+        json.dumps(
+            {
+                "id": "permit-review-process",
+                "layer": "business",
+                "archimate_type": "Business Process",
+                "name": "Permit Review Process",
+                "documentation": "The permit review process checks applications.",
+                "confidence": "observed",
+                "evidence": [
+                    {
+                        "source_type": "fixture",
+                        "locator": "/evidence/business/interview-transcript.md:1",
+                        "excerpt": "The permit review process checks applications.",
+                    }
+                ],
+                "relationships": [],
+            }
+        ),
         encoding="utf-8",
     )
 

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from agents.archimate_metamodel import list_element_types
+from agents.ingestion.tools import append_model_relationship_tool, write_model_element_tool
 
 INGESTION_SUBAGENT_NAMES = [
     "strategy-analyst",
@@ -22,6 +23,7 @@ class IngestionSubagentProfile:
     output_layers: tuple[str, ...]
     allowed_types_by_layer: dict[str, tuple[str, ...]]
     system_prompt: str
+    tools: tuple[Any, ...]
 
     def to_subagent(self) -> dict[str, Any]:
         return {
@@ -29,6 +31,7 @@ class IngestionSubagentProfile:
             "description": self.description,
             "system_prompt": self.system_prompt,
             "skills": ["/skills/"],
+            "tools": list(self.tools),
         }
 
 
@@ -149,6 +152,9 @@ def _profile(
         output_layers=output_layers,
         allowed_types_by_layer=allowed_types_by_layer,
         system_prompt=prompt,
+        tools=(
+            (append_model_relationship_tool,) if relationship_only else (write_model_element_tool,)
+        ),
     )
 
 
@@ -176,8 +182,7 @@ def _system_prompt(
         "line or line range."
         if require_line_locators
         else (
-            "Evidence locators must identify the exact document, section, file, "
-            "or transcript span."
+            "Evidence locators must identify the exact document, section, file, or transcript span."
         )
     )
     relationship_rule = (
@@ -185,7 +190,28 @@ def _system_prompt(
         "Use Serving, Realization, or Flow only when the ArchiMate metamodel skill establishes "
         "the source-target pair. Unsupported candidates must be reported as skipped."
         if relationship_only
-        else "Write one JSON file per accepted element under /systems/<system-id>/as-is/<layer>/."
+        else (
+            "For each accepted element, call write_model_element_tool. Do not call write_file "
+            "or edit_file for model JSON."
+        )
+    )
+    tool_contract = (
+        "Tool contract:\n"
+        "- Call append_model_relationship_tool for every accepted relationship candidate.\n"
+        "- Pass relationship as an object with target_id, type, and evidence.\n"
+        "- If the tool returns skipped or rejected, report the candidate in your summary and do "
+        "not retry by writing files manually.\n"
+        "- Never call write_file or edit_file for relationship updates."
+        if relationship_only
+        else (
+            "Tool contract:\n"
+            "- Call write_model_element_tool for every accepted element candidate.\n"
+            "- Pass element as an object, not as a markdown block or raw file content.\n"
+            "- The deterministic tool validates agents.schema.ModelElement and serializes JSON.\n"
+            "- If the tool returns rejected, fix the candidate only when the evidence supports the "
+            "fix; otherwise report it as skipped.\n"
+            "- Never call write_file or edit_file for model JSON."
+        )
     )
 
     return f"""You are the Epic E {name} ingestion subagent.
@@ -211,4 +237,6 @@ Traceability rules:
 - When a relationship is not established by the metamodel skill, report it as skipped.
 - {locator_rule}
 - {relationship_rule}
+
+{tool_contract}
 """

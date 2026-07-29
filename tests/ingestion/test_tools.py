@@ -1,0 +1,162 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from agents.ingestion.model_io import load_model_elements, write_model_element
+from agents.ingestion.tools import append_model_relationship_tool, write_model_element_tool
+from agents.schema import EvidenceCitation, ModelElement
+
+
+def test_write_model_element_tool_validates_and_writes_json(tmp_path: Path) -> None:
+    result = write_model_element_tool.invoke(
+        {
+            "systems_root": str(tmp_path),
+            "system_id": "demo",
+            "element": _element_payload(
+                element_id="case-handling-service",
+                layer="application",
+                archimate_type="Application Service",
+            ),
+        }
+    )
+
+    assert result["status"] == "written"
+    assert result["written"] is True
+    elements = load_model_elements(tmp_path, "demo")
+    assert elements["case-handling-service"].archimate_type == "Application Service"
+
+
+def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) -> None:
+    result = write_model_element_tool.invoke(
+        {
+            "systems_root": str(tmp_path),
+            "system_id": "demo",
+            "element": _element_payload(
+                element_id="bad",
+                layer="business",
+                archimate_type="Application Component",
+            ),
+        }
+    )
+
+    assert result["status"] == "rejected"
+    assert result["written"] is False
+    assert "not valid for layer" in result["reason"]
+    assert load_model_elements(tmp_path, "demo") == {}
+
+
+def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path) -> None:
+    source = _element(
+        element_id="citizen-applicant",
+        layer="business",
+        archimate_type="Business Role",
+    )
+    target = _element(
+        element_id="permit-review-process",
+        layer="business",
+        archimate_type="Business Process",
+    )
+    write_model_element(tmp_path, "demo", source)
+    write_model_element(tmp_path, "demo", target)
+
+    result = append_model_relationship_tool.invoke(
+        {
+            "systems_root": str(tmp_path),
+            "system_id": "demo",
+            "source_id": source.id,
+            "relationship": {
+                "target_id": target.id,
+                "type": "Assignment",
+                "evidence": [_evidence("Applicant performs the review process.")],
+            },
+        }
+    )
+
+    assert result["status"] == "written"
+    assert result["written"] is True
+    assert load_model_elements(tmp_path, "demo")[source.id].relationships[0].target_id == target.id
+
+
+def test_append_model_relationship_tool_rejects_missing_target(tmp_path: Path) -> None:
+    source = _element(
+        element_id="case-handling-service",
+        layer="application",
+        archimate_type="Application Service",
+    )
+    write_model_element(tmp_path, "demo", source)
+
+    result = append_model_relationship_tool.invoke(
+        {
+            "systems_root": str(tmp_path),
+            "system_id": "demo",
+            "source_id": source.id,
+            "relationship": {
+                "target_id": "missing-process",
+                "type": "Serving",
+                "evidence": [_evidence()],
+            },
+        }
+    )
+
+    assert result["status"] == "rejected"
+    assert result["written"] is False
+    assert "does not exist" in result["reason"]
+
+
+def test_append_model_relationship_tool_skips_unsupported_pair(tmp_path: Path) -> None:
+    source = _element(
+        element_id="case-api",
+        layer="application",
+        archimate_type="Application Interface",
+    )
+    target = _element(
+        element_id="case-handling-service",
+        layer="application",
+        archimate_type="Application Service",
+    )
+    write_model_element(tmp_path, "demo", source)
+    write_model_element(tmp_path, "demo", target)
+
+    result = append_model_relationship_tool.invoke(
+        {
+            "systems_root": str(tmp_path),
+            "system_id": "demo",
+            "source_id": source.id,
+            "relationship": {
+                "target_id": target.id,
+                "type": "Flow",
+                "evidence": [_evidence("The API sends case data to the service.")],
+            },
+        }
+    )
+
+    assert result["status"] == "skipped"
+    assert result["written"] is False
+    assert "not established" in result["reason"]
+
+
+def _element_payload(*, element_id: str, layer: str, archimate_type: str) -> dict:
+    return {
+        "id": element_id,
+        "layer": layer,
+        "archimate_type": archimate_type,
+        "name": element_id.replace("-", " ").title(),
+        "documentation": "Evidence-grounded fixture element.",
+        "confidence": "observed",
+        "evidence": [_evidence()],
+        "relationships": [],
+    }
+
+
+def _element(*, element_id: str, layer: str, archimate_type: str) -> ModelElement:
+    return ModelElement(
+        **_element_payload(element_id=element_id, layer=layer, archimate_type=archimate_type)
+    )
+
+
+def _evidence(excerpt: str = "Evidence excerpt.") -> dict:
+    return EvidenceCitation(
+        source_type="fixture",
+        locator="/evidence/example.md:1",
+        excerpt=excerpt,
+    ).model_dump()
