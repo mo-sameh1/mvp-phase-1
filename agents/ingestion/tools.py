@@ -102,11 +102,13 @@ def _resolve_tool_context(
     system_id: str | None,
 ) -> tuple[Path, str]:
     settings = get_settings()
-    return (
-        (
-            Path(systems_root).expanduser().resolve()
-            if systems_root
-            else RuntimePaths.from_settings(settings).systems_root
-        ),
-        system_id or settings.model_repo_system_id,
+    configured_systems_root = RuntimePaths.from_settings(settings).systems_root.resolve()
+    resolved_systems_root = (
+        Path(systems_root).expanduser().resolve() if systems_root else configured_systems_root
     )
+    if resolved_systems_root.name != "systems":
+        raise ValueError(
+            "systems_root must point to the model repository systems directory. "
+            "Omit systems_root or pass the exact .../systems value from the orchestration prompt."
+        )
+    return resolved_systems_root, system_id or settings.model_repo_system_id

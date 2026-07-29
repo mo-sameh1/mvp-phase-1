@@ -8,9 +8,10 @@ from agents.schema import EvidenceCitation, ModelElement
 
 
 def test_write_model_element_tool_validates_and_writes_json(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
     result = write_model_element_tool.invoke(
         {
-            "systems_root": str(tmp_path),
+            "systems_root": str(systems_root),
             "system_id": "demo",
             "element": _element_payload(
                 element_id="case-handling-service",
@@ -22,14 +23,15 @@ def test_write_model_element_tool_validates_and_writes_json(tmp_path: Path) -> N
 
     assert result["status"] == "written"
     assert result["written"] is True
-    elements = load_model_elements(tmp_path, "demo")
+    elements = load_model_elements(systems_root, "demo")
     assert elements["case-handling-service"].archimate_type == "Application Service"
 
 
 def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
     result = write_model_element_tool.invoke(
         {
-            "systems_root": str(tmp_path),
+            "systems_root": str(systems_root),
             "system_id": "demo",
             "element": _element_payload(
                 element_id="bad",
@@ -42,10 +44,11 @@ def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) 
     assert result["status"] == "rejected"
     assert result["written"] is False
     assert "not valid for layer" in result["reason"]
-    assert load_model_elements(tmp_path, "demo") == {}
+    assert load_model_elements(systems_root, "demo") == {}
 
 
 def test_write_model_element_tool_rejects_inline_relationships(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
     payload = _element_payload(
         element_id="citizen-applicant",
         layer="business",
@@ -61,7 +64,7 @@ def test_write_model_element_tool_rejects_inline_relationships(tmp_path: Path) -
 
     result = write_model_element_tool.invoke(
         {
-            "systems_root": str(tmp_path),
+            "systems_root": str(systems_root),
             "system_id": "demo",
             "element": payload,
         }
@@ -70,10 +73,29 @@ def test_write_model_element_tool_rejects_inline_relationships(tmp_path: Path) -
     assert result["status"] == "rejected"
     assert result["written"] is False
     assert "relationships to []" in result["reason"]
-    assert load_model_elements(tmp_path, "demo") == {}
+    assert load_model_elements(systems_root, "demo") == {}
+
+
+def test_write_model_element_tool_rejects_unsafe_systems_root() -> None:
+    result = write_model_element_tool.invoke(
+        {
+            "systems_root": "/",
+            "system_id": "demo",
+            "element": _element_payload(
+                element_id="citizen-applicant",
+                layer="business",
+                archimate_type="Business Role",
+            ),
+        }
+    )
+
+    assert result["status"] == "rejected"
+    assert result["written"] is False
+    assert "systems directory" in result["reason"]
 
 
 def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
     source = _element(
         element_id="citizen-applicant",
         layer="business",
@@ -84,12 +106,12 @@ def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path
         layer="business",
         archimate_type="Business Process",
     )
-    write_model_element(tmp_path, "demo", source)
-    write_model_element(tmp_path, "demo", target)
+    write_model_element(systems_root, "demo", source)
+    write_model_element(systems_root, "demo", target)
 
     result = append_model_relationship_tool.invoke(
         {
-            "systems_root": str(tmp_path),
+            "systems_root": str(systems_root),
             "system_id": "demo",
             "source_id": source.id,
             "relationship": {
@@ -102,20 +124,23 @@ def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path
 
     assert result["status"] == "written"
     assert result["written"] is True
-    assert load_model_elements(tmp_path, "demo")[source.id].relationships[0].target_id == target.id
+    assert (
+        load_model_elements(systems_root, "demo")[source.id].relationships[0].target_id == target.id
+    )
 
 
 def test_append_model_relationship_tool_rejects_missing_target(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
     source = _element(
         element_id="case-handling-service",
         layer="application",
         archimate_type="Application Service",
     )
-    write_model_element(tmp_path, "demo", source)
+    write_model_element(systems_root, "demo", source)
 
     result = append_model_relationship_tool.invoke(
         {
-            "systems_root": str(tmp_path),
+            "systems_root": str(systems_root),
             "system_id": "demo",
             "source_id": source.id,
             "relationship": {
@@ -132,6 +157,7 @@ def test_append_model_relationship_tool_rejects_missing_target(tmp_path: Path) -
 
 
 def test_append_model_relationship_tool_skips_unsupported_pair(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
     source = _element(
         element_id="case-api",
         layer="application",
@@ -142,12 +168,12 @@ def test_append_model_relationship_tool_skips_unsupported_pair(tmp_path: Path) -
         layer="application",
         archimate_type="Application Service",
     )
-    write_model_element(tmp_path, "demo", source)
-    write_model_element(tmp_path, "demo", target)
+    write_model_element(systems_root, "demo", source)
+    write_model_element(systems_root, "demo", target)
 
     result = append_model_relationship_tool.invoke(
         {
-            "systems_root": str(tmp_path),
+            "systems_root": str(systems_root),
             "system_id": "demo",
             "source_id": source.id,
             "relationship": {
