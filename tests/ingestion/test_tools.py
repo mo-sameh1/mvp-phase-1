@@ -74,6 +74,34 @@ def test_write_model_element_tool_canonicalizes_compact_archimate_type(tmp_path:
     )
 
 
+def test_write_model_element_tool_canonicalizes_common_scalar_fields(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
+    payload = _element_payload(
+        element_id="citizen_access_goal",
+        layer="Motivation Layer",
+        archimate_type="Goal",
+    )
+    payload["confidence"] = "Observed"
+    payload["evidence"] = _evidence("Citizen access is a goal.")
+    payload["relationships"] = None
+
+    result = write_model_element_tool.invoke(
+        {
+            "systems_root": str(systems_root),
+            "system_id": "demo",
+            "run_id": "run-1",
+            "element": payload,
+        }
+    )
+
+    element = load_model_elements(systems_root, "demo")["citizen-access-goal"]
+    assert result["status"] == "written"
+    assert element.layer == "motivation"
+    assert element.confidence == "observed"
+    assert len(element.evidence) == 1
+    assert element.relationships == []
+
+
 def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) -> None:
     systems_root = tmp_path / "systems"
     with pytest.raises(ValueError, match="Ingestion tool rejected candidate"):
@@ -173,6 +201,42 @@ def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path
     assert (
         load_model_elements(systems_root, "demo")[source.id].relationships[0].target_id == target.id
     )
+
+
+def test_append_model_relationship_tool_canonicalizes_relationship_shape(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
+    source = _element(
+        element_id="case-management-system",
+        layer="application",
+        archimate_type="Application Component",
+    )
+    target = _element(
+        element_id="case-handling-service",
+        layer="application",
+        archimate_type="Application Service",
+    )
+    write_model_element(systems_root, "demo", source)
+    write_model_element(systems_root, "demo", target)
+
+    result = append_model_relationship_tool.invoke(
+        {
+            "systems_root": str(systems_root),
+            "system_id": "demo",
+            "run_id": "run-1",
+            "source_id": "case_management_system",
+            "relationship": {
+                "target_id": "case_handling_service",
+                "type": "realizes",
+                "evidence": _evidence("System realizes service."),
+            },
+        }
+    )
+
+    relationship = load_model_elements(systems_root, "demo")[source.id].relationships[0]
+    assert result["status"] == "written"
+    assert relationship.target_id == "case-handling-service"
+    assert relationship.type == "Realization"
+    assert len(relationship.evidence) == 1
 
 
 def test_append_model_relationship_tool_rejects_missing_target(tmp_path: Path) -> None:

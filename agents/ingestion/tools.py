@@ -8,7 +8,7 @@ from typing import Any
 from langchain_core.tools import tool
 from pydantic import ValidationError
 
-from agents.archimate_metamodel import list_element_types
+from agents.archimate_metamodel import list_element_types, list_relationship_types
 from agents.ingestion.model_io import append_relationship, slugify, write_model_element
 from agents.runtime.filesystem import RuntimePaths
 from agents.schema import ModelElement, RelationshipRef
@@ -171,8 +171,16 @@ def _resolve_tool_context(
 
 def _canonicalize_element_payload(payload: dict[str, Any]) -> dict[str, Any]:
     canonical = dict(payload)
+    if isinstance(canonical.get("layer"), str):
+        canonical["layer"] = _canonicalize_layer(canonical["layer"])
     if isinstance(canonical.get("id"), str):
         canonical["id"] = slugify(canonical["id"])
+    if isinstance(canonical.get("confidence"), str):
+        canonical["confidence"] = canonical["confidence"].strip().casefold()
+    if isinstance(canonical.get("evidence"), dict):
+        canonical["evidence"] = [canonical["evidence"]]
+    if canonical.get("relationships") is None:
+        canonical["relationships"] = []
     if isinstance(canonical.get("layer"), str) and isinstance(canonical.get("archimate_type"), str):
         canonical["archimate_type"] = _canonicalize_archimate_type(
             layer=canonical["layer"],
@@ -185,7 +193,19 @@ def _canonicalize_relationship_payload(payload: dict[str, Any]) -> dict[str, Any
     canonical = dict(payload)
     if isinstance(canonical.get("target_id"), str):
         canonical["target_id"] = slugify(canonical["target_id"])
+    if isinstance(canonical.get("type"), str):
+        canonical["type"] = _canonicalize_relationship_type(canonical["type"])
+    if isinstance(canonical.get("evidence"), dict):
+        canonical["evidence"] = [canonical["evidence"]]
     return canonical
+
+
+def _canonicalize_layer(layer: str) -> str:
+    compact = _compact_name(layer)
+    for valid_layer in ("motivation", "strategy", "business", "application", "technology"):
+        if _compact_name(valid_layer) == compact or compact == f"{valid_layer}layer":
+            return valid_layer
+    return layer
 
 
 def _canonicalize_archimate_type(*, layer: str, archimate_type: str) -> str:
@@ -194,6 +214,37 @@ def _canonicalize_archimate_type(*, layer: str, archimate_type: str) -> str:
         if _compact_name(valid_type) == requested:
             return valid_type
     return archimate_type
+
+
+def _canonicalize_relationship_type(relationship_type: str) -> str:
+    requested = _compact_name(relationship_type)
+    aliases = {
+        "realize": "Realization",
+        "realizes": "Realization",
+        "realizedby": "Realization",
+        "serve": "Serving",
+        "serves": "Serving",
+        "servedby": "Serving",
+        "flowsto": "Flow",
+        "flows": "Flow",
+        "trigger": "Triggering",
+        "triggers": "Triggering",
+        "influence": "Influence",
+        "influences": "Influence",
+        "accesses": "Access",
+        "assigns": "Assignment",
+        "assignedto": "Assignment",
+        "composes": "Composition",
+        "aggregates": "Aggregation",
+        "associates": "Association",
+        "specializes": "Specialization",
+    }
+    if requested in aliases:
+        return aliases[requested]
+    for valid_type in list_relationship_types():
+        if _compact_name(valid_type) == requested:
+            return valid_type
+    return relationship_type
 
 
 def _compact_name(value: str) -> str:
