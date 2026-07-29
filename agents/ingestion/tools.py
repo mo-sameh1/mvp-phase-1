@@ -7,7 +7,9 @@ from langchain_core.tools import tool
 from pydantic import ValidationError
 
 from agents.ingestion.model_io import append_relationship, write_model_element
+from agents.runtime.filesystem import RuntimePaths
 from agents.schema import ModelElement, RelationshipRef
+from backend.config.settings import get_settings
 
 
 def validate_model_element_payload(payload: dict[str, Any]) -> ModelElement:
@@ -17,14 +19,27 @@ def validate_model_element_payload(payload: dict[str, Any]) -> ModelElement:
 
 @tool
 def write_model_element_tool(
-    systems_root: str,
-    system_id: str,
     element: dict[str, Any],
+    systems_root: str | None = None,
+    system_id: str | None = None,
 ) -> dict[str, Any]:
     """Validate and write one agents.schema.ModelElement JSON file."""
     try:
         validated = validate_model_element_payload(element)
-        path = write_model_element(Path(systems_root), system_id, validated)
+        if validated.relationships:
+            return {
+                "status": "rejected",
+                "written": False,
+                "reason": (
+                    "write_model_element_tool accepts element facts only. Set relationships to [] "
+                    "and use append_model_relationship_tool after all target IDs exist."
+                ),
+            }
+        resolved_systems_root, resolved_system_id = _resolve_tool_context(
+            systems_root=systems_root,
+            system_id=system_id,
+        )
+        path = write_model_element(resolved_systems_root, resolved_system_id, validated)
     except (ValidationError, ValueError) as exc:
         return {
             "status": "rejected",
@@ -44,17 +59,21 @@ def write_model_element_tool(
 
 @tool
 def append_model_relationship_tool(
-    systems_root: str,
-    system_id: str,
     source_id: str,
     relationship: dict[str, Any],
+    systems_root: str | None = None,
+    system_id: str | None = None,
 ) -> dict[str, Any]:
     """Validate and append one evidence-cited relationship to an existing model element."""
     try:
         validated = RelationshipRef(**relationship)
-        decision = append_relationship(
-            systems_root=Path(systems_root),
+        resolved_systems_root, resolved_system_id = _resolve_tool_context(
+            systems_root=systems_root,
             system_id=system_id,
+        )
+        decision = append_relationship(
+            systems_root=resolved_systems_root,
+            system_id=resolved_system_id,
             source_id=source_id,
             relationship=validated,
         )
@@ -75,3 +94,19 @@ def append_model_relationship_tool(
         "reason": decision.reason,
         "citation": decision.citation,
     }
+
+
+def _resolve_tool_context(
+    *,
+    systems_root: str | None,
+    system_id: str | None,
+) -> tuple[Path, str]:
+    settings = get_settings()
+    return (
+        (
+            Path(systems_root).expanduser().resolve()
+            if systems_root
+            else RuntimePaths.from_settings(settings).systems_root
+        ),
+        system_id or settings.model_repo_system_id,
+    )

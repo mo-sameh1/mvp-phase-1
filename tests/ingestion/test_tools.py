@@ -45,6 +45,34 @@ def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) 
     assert load_model_elements(tmp_path, "demo") == {}
 
 
+def test_write_model_element_tool_rejects_inline_relationships(tmp_path: Path) -> None:
+    payload = _element_payload(
+        element_id="citizen-applicant",
+        layer="business",
+        archimate_type="Business Role",
+    )
+    payload["relationships"] = [
+        {
+            "target_id": "permit-application-process",
+            "type": "Assignment",
+            "evidence": [_evidence("Applicant starts the request.")],
+        }
+    ]
+
+    result = write_model_element_tool.invoke(
+        {
+            "systems_root": str(tmp_path),
+            "system_id": "demo",
+            "element": payload,
+        }
+    )
+
+    assert result["status"] == "rejected"
+    assert result["written"] is False
+    assert "relationships to []" in result["reason"]
+    assert load_model_elements(tmp_path, "demo") == {}
+
+
 def test_append_model_relationship_tool_writes_valid_relationship(tmp_path: Path) -> None:
     source = _element(
         element_id="citizen-applicant",

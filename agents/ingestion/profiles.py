@@ -229,7 +229,8 @@ Output must conform to agents.schema.ModelElement:
 - name and documentation: concise and evidence-grounded
 - confidence: observed or inferred
 - evidence: non-empty citations with source_type, locator, and excerpt
-- relationships: evidence-cited relationships only
+- relationships: [] for element extraction subagents; relationships are appended only by
+  integration-mapper using append_model_relationship_tool
 
 Traceability rules:
 - Reject and skip any candidate that lacks a specific evidence excerpt.
