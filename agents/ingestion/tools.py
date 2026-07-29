@@ -7,7 +7,7 @@ from typing import Any
 from langchain_core.tools import tool
 from pydantic import ValidationError
 
-from agents.ingestion.model_io import append_relationship, write_model_element
+from agents.ingestion.model_io import append_relationship, slugify, write_model_element
 from agents.runtime.filesystem import RuntimePaths
 from agents.schema import ModelElement, RelationshipRef
 from backend.config.settings import get_settings
@@ -35,25 +35,7 @@ def write_model_element_tool(
             systems_root=systems_root,
             system_id=system_id,
         )
-        validated = validate_model_element_payload(element)
-        if validated.relationships:
-            result = {
-                "status": "rejected",
-                "written": False,
-                "reason": (
-                    "write_model_element_tool accepts element facts only. Set relationships to [] "
-                    "and use append_model_relationship_tool after all target IDs exist."
-                ),
-            }
-            _record_ingestion_tool_event(
-                systems_root=resolved_systems_root,
-                system_id=resolved_system_id,
-                run_id=run_id,
-                tool_name="write_model_element_tool",
-                result=result,
-            )
-            return result
-        path = write_model_element(resolved_systems_root, resolved_system_id, validated)
+        validated = validate_model_element_payload(_canonicalize_element_payload(element))
     except (ValidationError, ValueError) as exc:
         result = {
             "status": "rejected",
@@ -68,7 +50,24 @@ def write_model_element_tool(
                 tool_name="write_model_element_tool",
                 result=result,
             )
-        return result
+        raise ValueError(f"Ingestion tool rejected candidate: {exc}") from exc
+
+    if validated.relationships:
+        reason = (
+            "write_model_element_tool accepts element facts only. Set relationships to [] "
+            "and use append_model_relationship_tool after all target IDs exist."
+        )
+        result = {"status": "rejected", "written": False, "reason": reason}
+        _record_ingestion_tool_event(
+            systems_root=resolved_systems_root,
+            system_id=resolved_system_id,
+            run_id=run_id,
+            tool_name="write_model_element_tool",
+            result=result,
+        )
+        raise ValueError(f"Ingestion tool rejected candidate: {reason}")
+
+    path = write_model_element(resolved_systems_root, resolved_system_id, validated)
 
     result = {
         "status": "written",
@@ -102,7 +101,8 @@ def append_model_relationship_tool(
     /systems from the task prompt. Do not pass /, /systems/, or a virtual DeepAgents path.
     """
     try:
-        validated = RelationshipRef(**relationship)
+        canonical_source_id = slugify(source_id)
+        validated = RelationshipRef(**_canonicalize_relationship_payload(relationship))
         resolved_systems_root, resolved_system_id = _resolve_tool_context(
             systems_root=systems_root,
             system_id=system_id,
@@ -110,7 +110,7 @@ def append_model_relationship_tool(
         decision = append_relationship(
             systems_root=resolved_systems_root,
             system_id=resolved_system_id,
-            source_id=source_id,
+            source_id=canonical_source_id,
             relationship=validated,
         )
     except (ValidationError, ValueError) as exc:
@@ -128,7 +128,7 @@ def append_model_relationship_tool(
                 tool_name="append_model_relationship_tool",
                 result=result,
             )
-        return result
+        raise ValueError(f"Ingestion tool rejected candidate: {exc}") from exc
 
     result = {
         "status": "written" if decision.written else "skipped",
@@ -165,6 +165,20 @@ def _resolve_tool_context(
             "Omit systems_root or pass the exact .../systems value from the orchestration prompt."
         )
     return resolved_systems_root, system_id or settings.model_repo_system_id
+
+
+def _canonicalize_element_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    canonical = dict(payload)
+    if isinstance(canonical.get("id"), str):
+        canonical["id"] = slugify(canonical["id"])
+    return canonical
+
+
+def _canonicalize_relationship_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    canonical = dict(payload)
+    if isinstance(canonical.get("target_id"), str):
+        canonical["target_id"] = slugify(canonical["target_id"])
+    return canonical
 
 
 def _record_ingestion_tool_event(

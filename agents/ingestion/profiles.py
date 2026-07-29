@@ -203,8 +203,8 @@ def _system_prompt(
         "them.\n"
         "- Never invent operational paths. systems_root must be the exact absolute path ending "
         "in /systems from the task prompt, never / or /systems/.\n"
-        "- If the tool returns skipped or rejected, report the candidate in your summary and do "
-        "not retry by writing files manually.\n"
+        "- If the tool returns skipped, report the candidate in your summary. If the tool rejects "
+        "a candidate, stop; the pipeline will fail closed.\n"
         "- Never call write_file or edit_file for relationship updates."
         if relationship_only
         else (
@@ -216,8 +216,7 @@ def _system_prompt(
             "- Never invent operational paths. systems_root must be the exact absolute path ending "
             "in /systems from the task prompt, never / or /systems/.\n"
             "- The deterministic tool validates agents.schema.ModelElement and serializes JSON.\n"
-            "- If the tool returns rejected, fix the candidate only when the evidence supports the "
-            "fix; otherwise report it as skipped.\n"
+            "- If the tool rejects a candidate, stop; the pipeline will fail closed.\n"
             "- Never call write_file or edit_file for model JSON."
         )
     )
