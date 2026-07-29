@@ -256,6 +256,10 @@ layer/type pair from Epic C, and include at least one evidence citation. Relatio
 are appended only when both endpoint IDs already exist and Epic C establishes the source-target
 relationship pair. Unsupported candidates are reported as skipped.
 
+The live Epic H path uses `agents/ingestion/runner.py` to invoke the five real ingestion subagents
+directly in Python-owned order. This avoids a parent LLM deciding task order while preserving Deep
+Agent subagents, ArchiMate skills, provider flexibility, and deterministic write/relationship tools.
+
 Run the deterministic fixture smoke test with:
 
 ```bash
@@ -338,6 +342,12 @@ The Phase 1 orchestrator runs the live As-Is pipeline:
 
 ```text
 Epic E ingestion -> Epic F reconciliation/validation -> Epic G branch + PR
+```
+
+Epic E ingestion order is deterministic in Python:
+
+```text
+strategy-analyst -> business-analyst -> code-analyzer -> infra-analyzer -> integration-mapper
 ```
 
 If Epic F validation fails, the pipeline halts before GitHub commit/PR creation. Async execution uses
