@@ -51,6 +51,29 @@ def test_write_model_element_tool_canonicalizes_snake_case_id(tmp_path: Path) ->
     assert "case-handling-service" in load_model_elements(systems_root, "demo")
 
 
+def test_write_model_element_tool_canonicalizes_compact_archimate_type(tmp_path: Path) -> None:
+    systems_root = tmp_path / "systems"
+    result = write_model_element_tool.invoke(
+        {
+            "systems_root": str(systems_root),
+            "system_id": "demo",
+            "run_id": "run-1",
+            "element": _element_payload(
+                element_id="online-service-channel",
+                layer="strategy",
+                archimate_type="CourseOfAction",
+            ),
+        }
+    )
+
+    assert result["status"] == "written"
+    assert result["archimate_type"] == "Course of Action"
+    assert (
+        load_model_elements(systems_root, "demo")["online-service-channel"].archimate_type
+        == "Course of Action"
+    )
+
+
 def test_write_model_element_tool_rejects_invalid_model_payload(tmp_path: Path) -> None:
     systems_root = tmp_path / "systems"
     with pytest.raises(ValueError, match="Ingestion tool rejected candidate"):

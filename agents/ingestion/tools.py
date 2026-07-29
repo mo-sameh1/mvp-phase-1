@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 from langchain_core.tools import tool
 from pydantic import ValidationError
 
+from agents.archimate_metamodel import list_element_types
 from agents.ingestion.model_io import append_relationship, slugify, write_model_element
 from agents.runtime.filesystem import RuntimePaths
 from agents.schema import ModelElement, RelationshipRef
@@ -171,6 +173,11 @@ def _canonicalize_element_payload(payload: dict[str, Any]) -> dict[str, Any]:
     canonical = dict(payload)
     if isinstance(canonical.get("id"), str):
         canonical["id"] = slugify(canonical["id"])
+    if isinstance(canonical.get("layer"), str) and isinstance(canonical.get("archimate_type"), str):
+        canonical["archimate_type"] = _canonicalize_archimate_type(
+            layer=canonical["layer"],
+            archimate_type=canonical["archimate_type"],
+        )
     return canonical
 
 
@@ -179,6 +186,18 @@ def _canonicalize_relationship_payload(payload: dict[str, Any]) -> dict[str, Any
     if isinstance(canonical.get("target_id"), str):
         canonical["target_id"] = slugify(canonical["target_id"])
     return canonical
+
+
+def _canonicalize_archimate_type(*, layer: str, archimate_type: str) -> str:
+    requested = _compact_name(archimate_type)
+    for valid_type in list_element_types(layer):
+        if _compact_name(valid_type) == requested:
+            return valid_type
+    return archimate_type
+
+
+def _compact_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.casefold())
 
 
 def _record_ingestion_tool_event(
