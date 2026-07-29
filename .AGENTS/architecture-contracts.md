@@ -66,8 +66,13 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Background job execution uses the existing `jobs` table for `queued`, `running`, `succeeded`, and
   `failed` states. Crashes must become failed jobs with non-empty error messages.
 - Frontend-facing API endpoints are protected by `X-API-Key` and `BACKEND_API_KEY` for the MVP.
+- Frontend local development uses the Vite `/api` proxy to the FastAPI backend instead of backend
+  CORS middleware.
 - Full model element detail remains git-backed: `model_element_index` provides commit/path lookup,
   while JSON element content is read from the model repo.
+- Frontend external links are limited to GitHub PR URLs and backend-provided model JSON URLs for
+  now. Evidence locators are displayed as traceability text until a source-controlled evidence URL
+  convention exists.
 
 ## Security Contract
 

@@ -113,8 +113,7 @@ def test_read_element_detail_loads_git_backed_json(session, monkeypatch, tmp_pat
         current_commit="sha",
     )
     monkeypatch.setattr(
-        routes,
-        "show_file_at_ref",
+        "backend.api.model_content.show_file_at_ref",
         lambda runner, ref, path: json.dumps(_model_payload()),
     )
     client = _client(session, _settings(tmp_path))
@@ -124,6 +123,10 @@ def test_read_element_detail_loads_git_backed_json(session, monkeypatch, tmp_pat
 
     assert ok.status_code == 200
     assert ok.json()["element"]["evidence"][0]["excerpt"] == "Source evidence."
+    assert (
+        ok.json()["model_json_url"]
+        == "https://github.com/example/repo/blob/sha/systems/demo/as-is/application/app-service.json"
+    )
     assert missing.status_code == 404
 
 

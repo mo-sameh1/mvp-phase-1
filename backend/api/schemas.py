@@ -48,6 +48,7 @@ class ModelElementDetailResponse(BaseModel):
     system_id: str
     git_path: str
     current_commit: str
+    model_json_url: str
     element: dict[str, Any]
 
 

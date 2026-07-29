@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from agents.schema import ModelElement
 from backend.api.auth import require_api_key
+from backend.api.model_content import build_model_json_url, read_model_element_from_git
 from backend.api.schemas import (
     ArtifactVersionResponse,
     IngestRequest,
@@ -19,7 +18,7 @@ from backend.api.schemas import (
 )
 from backend.config.settings import Settings, get_settings
 from backend.database.session import get_session
-from backend.gitops.local_git import GitCommandError, GitRunner, show_file_at_ref
+from backend.gitops.local_git import GitCommandError
 from backend.orchestration.jobs import run_as_is_job
 from backend.repository.artifacts import list_artifact_versions
 from backend.repository.jobs import create_job, get_job
@@ -99,8 +98,11 @@ def read_element_detail(
     if index is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Element not found")
     try:
-        payload = _read_model_payload(settings, index.current_commit, index.git_path)
-        element = ModelElement(**payload)
+        element = read_model_element_from_git(
+            settings,
+            commit_sha=index.current_commit,
+            git_path=index.git_path,
+        )
     except (GitCommandError, ValueError, json.JSONDecodeError) as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -111,6 +113,11 @@ def read_element_detail(
         system_id=index.system_id,
         git_path=index.git_path,
         current_commit=index.current_commit,
+        model_json_url=build_model_json_url(
+            github_model_repo=settings.github_model_repo,
+            commit_sha=index.current_commit,
+            git_path=index.git_path,
+        ),
         element=element.model_dump(mode="json"),
     )
 
@@ -141,16 +148,6 @@ def _ensure_system(session: Session, system_id: str) -> None:
 def _require_system(session: Session, system_id: str) -> None:
     if get_legacy_system(session, system_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="System not found")
-
-
-def _read_model_payload(settings: Settings, commit_sha: str, git_path: str) -> dict:
-    runner = GitRunner(
-        Path(settings.model_repo_checkout).expanduser().resolve(),
-        settings.github_model_repo,
-        settings.github_token,
-    )
-    content = show_file_at_ref(runner, commit_sha, git_path)
-    return json.loads(content)
 
 
 def _columns(value) -> dict:

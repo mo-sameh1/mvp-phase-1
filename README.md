@@ -115,6 +115,8 @@ The script should create one visible trace in the configured LangSmith project. 
 
 ```bash
 make sync          # install dependencies
+make frontend-install
+make frontend-build
 make lint          # ruff + black check
 make test          # pytest
 make db-up         # start local Postgres
@@ -128,6 +130,26 @@ make epic-f-smoke  # live assembly subagent smoke, requires real LLM provider en
 make epic-g-smoke  # live GitHub PR smoke, requires DB and GitHub token
 make epic-h-smoke  # live API orchestration smoke, may create a real GitHub PR
 ```
+
+## Frontend Dev Proxy
+
+Epic I will build the React screens under `frontend/`. The Vite scaffold is already configured for
+MVP local development:
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+The frontend should call API paths through `/api`. Vite rewrites `/api/*` to the FastAPI backend
+target from `VITE_DEV_API_PROXY_TARGET`, defaulting to `http://127.0.0.1:8000`. This avoids browser
+CORS setup for the local MVP while keeping `X-API-Key` auth in place.
+
+Clickable frontend links should stay limited to GitHub PR URLs and the `model_json_url` returned by
+`GET /elements/{element_id}`. Evidence locators remain visible traceability text until a later task
+defines a source-controlled evidence URL convention.
 
 ## ArchiMate Metamodel Skill
 
