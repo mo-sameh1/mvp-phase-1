@@ -171,24 +171,26 @@ Verification:
 - `make frontend-build`
 - `make frontend-test`
 
-## Pending
-
 ### Epic J - End-to-End Validation
 
-Status: in progress.
+Status: implemented, with the live J2 recording/run remaining as the user-facing final demo action.
 
 Implemented behavior:
 
 - J1 synthetic fixture: `test-fixtures/epic-j/` contains invalid and approved evidence variants for
   the same fictional permit modernization system. Both variants cover the five ingestion subagent
   source types and document duplicate, unsupported relationship, and invalid-reference edge cases.
+- J2 acceptance path: invalid fixture proves fail-closed behavior before PR creation; approved
+  fixture exercises frontend trigger, backend async job, live ingestion/assembly agents, GitHub PR
+  automation, manual merge, signed webhook approval, model index refresh, and frontend model
+  browsing.
+- J3 developer runbook: `README.md` now documents clean-checkout setup, required environment
+  variables and where to get each secret, DB/backend/frontend startup, webhook configuration,
+  cleanup commands, troubleshooting, and the manual J2 acceptance flow.
 
-Manual work remaining:
+User-facing demo action remaining:
 
-- J2 acceptance: run the invalid halt demo and the approved full flow from the frontend twice from a
-  clean DB/model repo state.
-- J3 runbook: finalize after J2 has been recorded and any manual discoveries have been folded back
-  into `README.md`.
+- Run and record J2 from a clean DB/model repo state using the README flow.
 
 ## External Actions Still Needed
 

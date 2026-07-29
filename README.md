@@ -1,411 +1,799 @@
-# MVP Phase 1
+# 7bots.ai MVP Phase 1
 
-Engineering repository for the 7bots.ai legacy modernization MVP. This repo is the application codebase. It is separate from the GitHub model repository that will store generated ArchiMate output.
+<p align="center">
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white">
+  <img alt="React Vite" src="https://img.shields.io/badge/frontend-React%20%2B%20Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/database-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+  <img alt="LangSmith" src="https://img.shields.io/badge/tracing-LangSmith-1C3C3C?style=for-the-badge">
+</p>
 
-The current implementation covers Epics A-I: local tooling, Postgres, configuration,
-Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep Agent runtime
-scaffold, source-grounded ingestion subagent contracts, model assembly subagents, and GitHub PR
-automation, the async Phase 1 backend API, and the React/Vite model viewer.
+<p align="center">
+  <strong>Agentic AI pipeline for extracting, validating, reviewing, and browsing evidence-grounded ArchiMate As-Is models.</strong>
+</p>
 
-## Local Setup
+---
 
-1. Install `uv` and Docker.
-2. Copy the example environment file:
+## What This Repo Is
 
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Install Python dependencies:
-
-   ```bash
-   uv sync
-   ```
-
-4. Start Postgres:
-
-   ```bash
-   make db-up
-   ```
-
-   The Docker container listens on host port `5433` by default to avoid clashing with an existing local Postgres on `5432`.
-
-5. Run migrations:
-
-   ```bash
-   make db-migrate
-   ```
-
-6. Run checks:
-
-   ```bash
-   make lint
-   make test
-   ```
-
-## Manual GitHub Model Repo Setup
-
-Epic A3 requires a separate GitHub repository for generated model artifacts. Create it manually for now, then add this directory layout:
+This repository is the application codebase for the 7bots.ai Phase 1 MVP. It proves the As-Is modernization loop for one legacy system:
 
 ```text
-systems/demo-legacy-system/as-is/motivation/.gitkeep
-systems/demo-legacy-system/as-is/strategy/.gitkeep
-systems/demo-legacy-system/as-is/business/.gitkeep
-systems/demo-legacy-system/as-is/application/.gitkeep
-systems/demo-legacy-system/as-is/technology/.gitkeep
+Evidence -> ingestion subagents -> ArchiMate model JSON -> reconciliation + validation
+         -> GitHub pull request -> human approval -> indexed model viewer
 ```
 
-Create a fine-grained GitHub personal access token scoped only to that model repo with contents and pull-request read/write permissions. Put the repo name and token in `.env`:
+The generated architecture model is intentionally stored in a separate GitHub model repository. This application repo contains the backend, agents, frontend, tests, fixtures, and developer runbook.
+
+## Current Scope
+
+The implemented MVP covers Epics A through J:
+
+| Epic | Area | Status |
+| --- | --- | --- |
+| A | Environment, tooling, model repo setup, LangSmith setup | Implemented, with manual secret setup |
+| B | PostgreSQL schema, Alembic migrations, repository helpers | Implemented |
+| C | Source-grounded ArchiMate 3.2 metamodel skill | Implemented |
+| D | Deep Agent runtime scaffold and shared schema | Implemented |
+| E | Five ingestion subagents | Implemented |
+| F | Reconciler and validator assembly subagents | Implemented |
+| G | Git commit, GitHub PR automation, webhook approval | Implemented |
+| H | Async backend orchestration and API | Implemented |
+| I | React/Vite frontend model viewer | Implemented |
+| J | End-to-end fixture, acceptance flow, README runbook | Implemented by this runbook |
+
+## Repository Map
+
+```text
+agents/
+  archimate_metamodel/      Deterministic ArchiMate lookup utilities.
+  assembly/                 Epic F reconciler and validator subagents/tools.
+  ingestion/                Epic E ingestion subagent profiles and write tools.
+  runtime/                  Deep Agent provider, filesystem, and base-agent wiring.
+  skills/archimate-metamodel/
+                            Agent-readable skill plus structured metamodel data.
+
+backend/
+  api/                      FastAPI app, protected API routes, webhook route.
+  config/                   Settings loaded from .env.
+  database/                 SQLAlchemy models and session setup.
+  gitops/                   Local git, GitHub HTTP, PR body, webhook, index refresh.
+  orchestration/            Async Phase 1 job runner and pipeline orchestration.
+  repository/               Database access helpers.
+
+frontend/
+  src/api/                  Typed API client.
+  src/app/                  App shell and routes.
+  src/features/             Run, model element, and artifact-version screens.
+  src/components/           Reusable UI components.
+
+test-fixtures/
+  epic-e/                   Deterministic ingestion fixture.
+  epic-f/                   Reconciliation and validator fixtures.
+  epic-j/                   Final invalid and approved acceptance fixtures.
+
+tests/                      Backend, agent, gitops, orchestration, and API tests.
+```
+
+## Architecture Boundaries
+
+Keep these boundaries clear:
+
+| Boundary | Source of truth |
+| --- | --- |
+| Application code | This repo |
+| Full generated model JSON | Separate model repo, under `systems/<system-id>/as-is/` |
+| Fast query indexes and run state | PostgreSQL |
+| Human approval | GitHub pull request review |
+| Agent traces | LangSmith |
+| Source evidence | Local `EVIDENCE_ROOT`, never real client data in git |
+
+The database stores statuses, artifact metadata, and model indexes. It does not own the full model content; the model repo does.
+
+## Prerequisites
+
+Install these before starting from a clean checkout:
+
+| Tool | Why it is needed |
+| --- | --- |
+| Git | Clone this repo and the model repo. |
+| Python 3.11+ | Backend, agents, scripts, tests. |
+| `uv` | Python dependency and command runner. |
+| Docker Desktop or Docker Engine | Local PostgreSQL. |
+| Node.js 20+ and npm | Frontend development and tests. |
+| `psql` client | DB smoke checks and cleanup commands. |
+| Cloudflare Tunnel or another HTTPS tunnel | Local GitHub webhook delivery for the final demo. |
+
+Check versions:
 
 ```bash
-MODEL_REPO_SYSTEM_ID=demo-legacy-system
-EVIDENCE_ROOT=reference/evidence
-MODEL_REPO_CHECKOUT=../mvp-phase1-model
-GITHUB_MODEL_REPO=mo-sameh1/mvp-phase1-model
-GITHUB_TOKEN=github_pat_...
-GITHUB_WEBHOOK_SECRET=...
-BACKEND_API_KEY=...
+git --version
+python3 --version
+uv --version
+docker --version
+node --version
+npm --version
+psql --version
 ```
 
-## LangSmith Smoke Test
+## Clone Layout
 
-Fill these values in `.env`:
+Use this sibling-folder layout because the default `MODEL_REPO_CHECKOUT` points one directory up from this repo:
+
+```text
+~/Documents/GitHub/
+  mvp-phase-1/          this application repo
+  mvp-phase1-model/     separate generated-model repo
+```
+
+Clone the application repo:
+
+```bash
+cd ~/Documents/GitHub
+git clone git@github.com:mo-sameh1/mvp-phase-1.git
+cd mvp-phase-1
+```
+
+Clone or create the model repo:
+
+```bash
+cd ~/Documents/GitHub
+git clone git@github.com:mo-sameh1/mvp-phase1-model.git
+cd mvp-phase-1
+```
+
+If the model repo is brand new, initialize this layout in `mvp-phase1-model` and push it:
+
+```bash
+cd ~/Documents/GitHub/mvp-phase1-model
+mkdir -p systems/demo-legacy-system/as-is/{motivation,strategy,business,application,technology}
+touch systems/demo-legacy-system/as-is/{motivation,strategy,business,application,technology}/.gitkeep
+git add systems
+git commit -m "chore: initialize clean model repository"
+git branch -M main
+git push -u origin main
+```
+
+## Environment Setup
+
+Copy the examples:
+
+```bash
+cd ~/Documents/GitHub/mvp-phase-1
+cp .env.example .env
+cp frontend/.env.example frontend/.env
+```
+
+### Required Backend Values
+
+Use `.env` at the repo root.
+
+| Variable | Example | Where to get it |
+| --- | --- | --- |
+| `DATABASE_URL` | `postgresql+psycopg://mvp_app:mvp_app_password@localhost:5433/mvp_phase1` | Keep the example for local Docker Postgres. |
+| `TEST_DATABASE_URL` | `postgresql+psycopg://mvp_app:mvp_app_password@localhost:5433/mvp_phase1_test` | Keep the example for tests. |
+| `MODEL_REPO_SYSTEM_ID` | `demo-legacy-system` | Keep this for the MVP unless the demo system id changes. |
+| `EVIDENCE_ROOT` | `test-fixtures/epic-j/approved/evidence` | Set to the fixture or a local evidence folder. Real client evidence stays out of git. |
+| `MODEL_REPO_CHECKOUT` | `../mvp-phase1-model` | Local path to the model repo checkout. |
+| `GITHUB_MODEL_REPO` | `mo-sameh1/mvp-phase1-model` | GitHub owner/repo for the model repo. |
+| `GITHUB_TOKEN` | `github_pat_...` | Fine-grained GitHub PAT scoped only to the model repo. |
+| `GITHUB_WEBHOOK_SECRET` | random hex string | Generate locally with `openssl rand -hex 32`. |
+| `BACKEND_API_KEY` | random app secret | Generate locally with `openssl rand -hex 32`. |
+| `LANGCHAIN_API_KEY` | `lsv2_...` | LangSmith account settings. |
+| `LANGCHAIN_PROJECT` | `7bots-mvp-phase1-dev` | LangSmith project name. |
+| `LLM_PROVIDER` | `ollama`, `groq`, or `anthropic` | Pick one provider. |
+
+### GitHub Token Setup
+
+Create a fine-grained GitHub personal access token:
+
+1. Open GitHub settings.
+2. Go to Developer settings -> Personal access tokens -> Fine-grained tokens.
+3. Create a token scoped only to `mo-sameh1/mvp-phase1-model`.
+4. Grant repository permissions:
+   - Contents: Read and write.
+   - Pull requests: Read and write.
+   - Metadata: Read-only, automatically included.
+5. Put it in `.env` as `GITHUB_TOKEN`.
+
+Do not reuse this token as the frontend or backend API key.
+
+### GitHub Webhook Secret
+
+Generate a secret:
+
+```bash
+openssl rand -hex 32
+```
+
+Put the value in `.env`:
+
+```bash
+GITHUB_WEBHOOK_SECRET=<generated-value>
+```
+
+This secret is used only by GitHub webhooks. GitHub signs each webhook request with this secret, and the backend verifies the signature before changing artifact approval state.
+
+### Backend API Key
+
+Generate a separate app key:
+
+```bash
+openssl rand -hex 32
+```
+
+Put it in `.env`:
+
+```bash
+BACKEND_API_KEY=<generated-value>
+```
+
+Set the same value in `frontend/.env`:
+
+```bash
+VITE_API_KEY=<same-value-as-BACKEND_API_KEY>
+```
+
+This is MVP-level API protection. It is browser-visible and not production auth, but it gives the MVP a consistent authenticated API contract.
+
+### LangSmith Setup
+
+Create or use a LangSmith account, then:
+
+1. Open LangSmith.
+2. Create or choose a project, for example `7bots-mvp-phase1-dev`.
+3. Create an API key from account settings.
+4. Set:
 
 ```bash
 LANGCHAIN_TRACING_V2=true
-LANGCHAIN_API_KEY=...
+LANGCHAIN_API_KEY=<langsmith-key>
 LANGCHAIN_PROJECT=7bots-mvp-phase1-dev
 ```
 
-Then choose one model provider:
+Every live agent run should appear as a connected trace using the Phase 1 run id.
+
+### Model Provider Setup
+
+Pick exactly one provider in `.env`.
+
+#### Option A: Ollama Cloud
 
 ```bash
-# Local Ollama
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.1
-OLLAMA_API_KEY=
-
-# Or Ollama cloud
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=https://ollama.com
-OLLAMA_API_KEY=...
-OLLAMA_MODEL=gpt-oss:120b-cloud
+OLLAMA_API_KEY=<ollama-cloud-api-key>
+OLLAMA_MODEL=llama3.1:8b-cloud
+```
 
-# Or hosted Groq
+For stronger runs, you can choose a stronger Ollama Cloud model if your quota allows it. Restart the backend after changing any provider variable.
+
+#### Option B: Local Ollama
+
+```bash
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_API_KEY=
+OLLAMA_MODEL=llama3.1
+```
+
+Start Ollama and pull the model:
+
+```bash
+ollama serve
+ollama pull llama3.1
+```
+
+#### Option C: Groq
+
+```bash
 LLM_PROVIDER=groq
-GROQ_API_KEY=...
+GROQ_API_KEY=<groq-api-key>
 GROQ_MODEL=llama-3.3-70b-versatile
+```
 
-# Or hosted Anthropic
+Get the key from the Groq console.
+
+#### Option D: Anthropic
+
+```bash
 LLM_PROVIDER=anthropic
-ANTHROPIC_API_KEY=...
+ANTHROPIC_API_KEY=<anthropic-api-key>
 ANTHROPIC_MODEL=claude-3-5-haiku-latest
 ```
 
-Then run:
+Get the key from the Anthropic console.
+
+## Install And Verify From A Clean Checkout
+
+Run from the application repo root:
 
 ```bash
-make langsmith-smoke
-```
-
-The script should create one visible trace in the configured LangSmith project. For local Ollama, make sure `ollama serve` is running and the selected model has already been pulled. For Ollama cloud, set `OLLAMA_BASE_URL=https://ollama.com` and fill `OLLAMA_API_KEY`.
-
-## Common Commands
-
-```bash
-make sync          # install dependencies
-make frontend-install
+cd ~/Documents/GitHub/mvp-phase-1
+uv sync
+npm install --prefix frontend
+make db-up
+make db-migrate
+make lint
+make test
 make frontend-build
 make frontend-test
-make lint          # ruff + black check
-make test          # pytest
-make db-up         # start local Postgres
-make db-down       # stop local Postgres
-make db-migrate    # alembic upgrade head
-make db-downgrade  # alembic downgrade -1
-make archimate-smoke
-make epic-d-smoke  # requires real LLM provider env
-make epic-e-smoke  # deterministic fixture, no live LLM call
-make epic-f-smoke  # live assembly subagent smoke, requires real LLM provider env
-make epic-g-smoke  # live GitHub PR smoke, requires DB and GitHub token
-make epic-h-smoke  # live API orchestration smoke, may create a real GitHub PR
 ```
 
-## Epic J Acceptance Fixture
+Expected result:
 
-Epic J uses a committed synthetic fixture under:
+- `make lint` passes Ruff and Black checks.
+- `make test` passes the backend and agent suite.
+- `make frontend-build` passes TypeScript and Vite build.
+- `make frontend-test` passes frontend component and API-client tests.
+
+## Running The App Locally
+
+Open three terminals.
+
+### Terminal 1: Backend
+
+```bash
+cd ~/Documents/GitHub/mvp-phase-1
+uv run uvicorn backend.api.app:create_app --factory --reload --host 127.0.0.1 --port 8000
+```
+
+Check health:
+
+```bash
+curl http://127.0.0.1:8000/
+```
+
+Expected:
+
+```json
+{"health":"OK"}
+```
+
+API docs:
 
 ```text
-test-fixtures/epic-j/
+http://127.0.0.1:8000/docs
 ```
 
-Use `invalid/evidence/` first to prove the pipeline fails closed on a missing relationship target and
-does not open a PR. Use `approved/evidence/` for the full clean run that opens a PR, gets merged, and
-appears in the frontend after the GitHub webhook refreshes the index.
+Important: backend settings are cached when the process starts. If you change `.env`, fully stop and restart uvicorn. Do not expect a running process to reread `EVIDENCE_ROOT`, `OLLAMA_MODEL`, keys, or provider settings.
 
-For the invalid halt demo:
+### Terminal 2: Frontend
+
+```bash
+cd ~/Documents/GitHub/mvp-phase-1
+make frontend-dev
+```
+
+Open:
+
+```text
+http://127.0.0.1:5173
+```
+
+The frontend calls `/api/*`; Vite proxies those requests to `VITE_DEV_API_PROXY_TARGET`, defaulting to `http://127.0.0.1:8000`.
+
+### Terminal 3: Webhook Tunnel
+
+For the final GitHub webhook demo, expose the backend:
+
+```bash
+cloudflared tunnel --url http://localhost:8000
+```
+
+Use the generated HTTPS URL as the GitHub webhook payload URL.
+
+## GitHub Webhook Configuration
+
+Open the model repo settings in GitHub:
+
+```text
+https://github.com/mo-sameh1/mvp-phase1-model/settings/hooks
+```
+
+Create or update a webhook:
+
+| Setting | Value |
+| --- | --- |
+| Payload URL | `https://<cloudflared-domain>/webhooks/github` |
+| Content type | `application/json` |
+| Secret | Same value as `GITHUB_WEBHOOK_SECRET` |
+| SSL verification | Enable SSL verification |
+| Events | Select individual events, then choose Pull requests |
+| Active | Checked |
+
+Expected behavior:
+
+| GitHub action | Backend result |
+| --- | --- |
+| PR opened by the pipeline | Artifact version is `pending`. |
+| PR closed without merge | Artifact version becomes `rejected`. |
+| Rejected PR reopened | Artifact version becomes `pending`. |
+| PR merged | Artifact version becomes `approved`, and `model_element_index` is refreshed. |
+
+The Model page lists elements only after a PR is merged and the webhook has refreshed the index. A pending PR is intentionally not shown as approved model content.
+
+## API Contract
+
+Frontend-facing endpoints require:
+
+```text
+X-API-Key: <BACKEND_API_KEY>
+```
+
+Endpoints:
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/systems/{system_id}/ingest` | Queue an As-Is ingestion run. |
+| `GET` | `/jobs/{job_id}` | Read queued/running/succeeded/failed status. |
+| `GET` | `/systems/{system_id}/elements?layer=application` | List indexed model elements, optionally filtered by layer. |
+| `GET` | `/elements/{element_id}` | Read full git-backed element JSON plus model JSON URL. |
+| `GET` | `/systems/{system_id}/artifact-versions` | List PR/artifact approval records. |
+
+Unkeyed endpoints:
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/` | Health check. |
+| `GET` | `/docs` | FastAPI docs. |
+| `POST` | `/webhooks/github` | GitHub signed webhook receiver. |
+
+## Epic J Acceptance Flow
+
+J2 is the MVP finish line. It proves the connected product loop:
+
+```text
+frontend trigger -> backend job -> live ingestion agents -> assembly agents
+-> validation report -> GitHub PR -> manual merge -> webhook approval
+-> model index refresh -> frontend model viewer
+```
+
+Run the acceptance flow twice from a clean DB and clean model repo state for the reliability criterion.
+
+### Clean State Before Each Demo
+
+Stop backend, frontend, and tunnel processes.
+
+Reset application DB rows:
+
+```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -v ON_ERROR_STOP=1 \
+  -c 'truncate table artifact_versions, evidence_sources, jobs, model_element_index, legacy_systems restart identity cascade;'
+```
+
+Reset the model repo:
+
+```bash
+cd ~/Documents/GitHub/mvp-phase1-model
+git switch main
+git fetch origin main
+git reset --hard origin/main
+git clean -fd systems
+```
+
+Clear the frontend's saved last job id in the browser console:
+
+```js
+localStorage.removeItem("mvp-phase1:last-job:demo-legacy-system")
+```
+
+### Part 1: Invalid Fixture Must Fail Closed
+
+Set `.env`:
 
 ```bash
 EVIDENCE_ROOT=test-fixtures/epic-j/invalid/evidence
 ```
 
-For the approved end-to-end demo:
+Restart the backend after editing `.env`.
+
+In the frontend:
+
+1. Open `http://127.0.0.1:5173/systems/demo-legacy-system/run`.
+2. Leave the evidence-path field empty.
+3. Click Run.
+4. Wait for the job to reach `failed`.
+5. Confirm the UI shows the backend error message.
+6. Confirm no GitHub PR was opened for that failed run.
+
+Why this matters:
+
+- The invalid fixture includes a relationship candidate that points to a missing target.
+- The ingestion/validation path must reject that rather than inventing a target or opening a PR.
+- This proves fail-closed behavior before human review.
+
+Useful DB check:
+
+```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -c "select id, run_id, status, left(coalesce(error_message,''), 500) as error_message from jobs order by started_at desc nulls last;"
+```
+
+Expected:
+
+- One failed job.
+- Zero artifact versions for the failed run.
+
+### Part 2: Approved Fixture Opens A PR
+
+Clean state again.
+
+Set `.env`:
 
 ```bash
 EVIDENCE_ROOT=test-fixtures/epic-j/approved/evidence
 ```
 
-Trigger both runs from the frontend Run screen with the evidence-path field left empty so the backend
-uses `EVIDENCE_ROOT`. J2 should be run twice from a clean DB and clean model repo state for the
-reliability criterion.
+Restart the backend after editing `.env`.
 
-## Frontend Model Viewer
+In the frontend:
 
-Epic I adds the React/Vite/TypeScript model viewer under `frontend/`:
+1. Open the Run screen.
+2. Leave the evidence-path field empty.
+3. Click Run.
+4. Watch status move through `queued`, `running`, and `succeeded`.
+5. Open the Versions screen.
+6. Confirm there is a `pending` artifact version with a GitHub PR URL.
+7. Open the PR.
 
-```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
-```
+In GitHub:
 
-The frontend should call API paths through `/api`. Vite rewrites `/api/*` to the FastAPI backend
-target from `VITE_DEV_API_PROXY_TARGET`, defaulting to `http://127.0.0.1:8000`. This avoids browser
-CORS setup for the local MVP while keeping `X-API-Key` auth in place.
+1. Read the PR body.
+2. Confirm it includes run id, commit SHA, validation status, element counts, relationship count, and reconciliation notes.
+3. Merge the PR.
 
-Routes:
+Expected after merge:
 
-```text
-/systems/<system-id>/run
-/systems/<system-id>/elements
-/systems/<system-id>/elements/<element-id>
-/systems/<system-id>/versions
-```
+- GitHub sends a `pull_request.closed` webhook with `merged=true`.
+- Backend verifies the signature using `GITHUB_WEBHOOK_SECRET`.
+- `artifact_versions.approval_status` becomes `approved`.
+- `model_element_index` refreshes from the merged model repo `main` branch.
+- The frontend Versions page shows `approved`.
+- The frontend Model page lists indexed ArchiMate elements grouped by layer.
+- Element detail pages show documentation, evidence citations, relationships, commit SHA, git path, and model JSON link.
 
-Frontend environment values:
-
-```bash
-VITE_API_BASE_PATH=/api
-VITE_API_KEY=<same value as BACKEND_API_KEY>
-VITE_DEFAULT_SYSTEM_ID=demo-legacy-system
-VITE_JOB_POLLING_MS=3000
-VITE_DEV_API_PROXY_TARGET=http://127.0.0.1:8000
-```
-
-Clickable frontend links should stay limited to GitHub PR URLs and the `model_json_url` returned by
-`GET /elements/{element_id}`. Evidence locators remain visible traceability text until a later task
-defines a source-controlled evidence URL convention.
-
-Frontend checks:
+Useful DB checks:
 
 ```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -c "select run_id, approval_status, pr_number, pr_url, approved_by, approved_at from artifact_versions order by created_at desc;"
+```
+
+```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -c "select layer, count(*) from model_element_index group by layer order by layer;"
+```
+
+Expected:
+
+- Latest artifact version is `approved`.
+- `model_element_index` has rows across the ArchiMate layers represented by the accepted run.
+
+## Frontend Demo Flow
+
+Use these screens during recording:
+
+| Screen | URL | What to show |
+| --- | --- | --- |
+| Run | `/systems/demo-legacy-system/run` | Trigger run, job id, status polling, failure message or success. |
+| Versions | `/systems/demo-legacy-system/versions` | Pending, rejected, or approved artifact versions and PR links. |
+| Model | `/systems/demo-legacy-system/elements` | Elements grouped by ArchiMate layer after approval. |
+| Detail | `/systems/demo-legacy-system/elements/<element-id>` | Evidence citations, relationships, commit SHA, git path, model JSON link. |
+
+Clickable external links are intentionally limited to GitHub PR URLs and backend-provided model JSON URLs. Evidence locators are displayed as traceability text until a later source-controlled evidence URL convention exists.
+
+## Smoke Commands
+
+Run deterministic and local checks any time:
+
+```bash
+make lint
+make test
 make frontend-build
 make frontend-test
-```
-
-## ArchiMate Metamodel Skill
-
-Epic C adds a source-grounded ArchiMate 3.2 metamodel foundation:
-
-```text
-agents/skills/archimate-metamodel/
-agents/archimate_metamodel/
-```
-
-The structured JSON files are the deterministic validator authority. `SKILL.md` is the agent-readable guide. Relationship validation fails closed unless a rule is marked approved from an official source.
-
-Run the deterministic smoke test with:
-
-```bash
 make archimate-smoke
-```
-
-## Deep Agent Runtime Scaffold
-
-Epic D adds the shared model-element schema and Deep Agent runtime scaffold:
-
-```text
-agents/schema.py
-agents/runtime/
-```
-
-The runtime keeps provider selection, filesystem routing, base agent construction, and placeholder
-subagent registration in separate modules. `LLM_PROVIDER` may be `ollama`, `groq`, or `anthropic`.
-
-The agent-visible filesystem is split into three routes:
-
-```text
-/evidence/  read-only local evidence from EVIDENCE_ROOT
-/systems/   writable model repo checkout under MODEL_REPO_CHECKOUT/systems
-/skills/    read-only project skills from agents/skills
-```
-
-Run the Deep Agent smoke checks after real provider and LangSmith env vars are set:
-
-```bash
-make deepagent-smoke
-make deepagent-subagent-smoke
-make epic-d-smoke
-```
-
-`deepagent-subagent-smoke` verifies the five Epic E placeholder subagents:
-
-```text
-strategy-analyst
-business-analyst
-code-analyzer
-infra-analyzer
-integration-mapper
-```
-
-## Epic E Ingestion Subagents
-
-Epic E adds source-grounded ingestion profiles and deterministic validation helpers:
-
-```text
-agents/ingestion/
-test-fixtures/epic-e/
-```
-
-The real ingestion roles are:
-
-```text
-strategy-analyst      reads /evidence/strategy/ and /evidence/motivation/
-business-analyst      reads /evidence/business/
-code-analyzer         reads /evidence/code/
-infra-analyzer        reads /evidence/infra/
-integration-mapper    reads /evidence/integration/ and existing /systems/ output
-```
-
-Each accepted element must validate as `agents.schema.ModelElement`, use an allowed ArchiMate
-layer/type pair from Epic C, and include at least one evidence citation. Relationship candidates
-are appended only when both endpoint IDs already exist and Epic C establishes the source-target
-relationship pair. Unsupported candidates are reported as skipped.
-
-Run the deterministic fixture smoke test with:
-
-```bash
 make epic-e-smoke
 make epic-e-smoke EPIC_E_REPEAT=2
 ```
 
-The committed fixture is synthetic and safe for git. Real client evidence should stay under
-`EVIDENCE_ROOT` outside git, and generated model JSON should be written to the separate model repo
-checkout configured by `MODEL_REPO_CHECKOUT`.
-
-## Epic F Assembly Subagents
-
-Epic F adds two model assembly subagents backed by deterministic tools:
-
-```text
-reconciler
-validator
-```
-
-The reconciler merges exact normalized-name duplicates within the same layer and ArchiMate type,
-retains all evidence, rewrites relationship targets to canonical IDs, and flags ambiguous near-misses
-for human review. The validator scans the reconciled model tree tolerantly, checks schema/evidence
-and Epic C metamodel rules, and writes human plus machine-readable reports under:
-
-```text
-systems/<system-id>/reports/<run-id>/
-```
-
-Run the live smoke test after provider and LangSmith environment values are configured:
+Run live checks only when provider, LangSmith, GitHub, DB, and model repo settings are ready:
 
 ```bash
+make langsmith-smoke
+make deepagent-smoke
+make deepagent-subagent-smoke
+make epic-d-smoke
 make epic-f-smoke
-make epic-f-smoke EPIC_F_ARGS="--include-broken-demo"
-```
-
-## Epic G GitHub PR Automation
-
-Epic G adds deterministic GitHub model-repo automation:
-
-```text
-backend/gitops/
-backend/api/app.py
-```
-
-`commit_to_model` creates or reuses `feature/ingest-<system-id>-<run-id>`, commits only
-`systems/<system-id>/`, and pushes with token-backed HTTPS. `open_pull_request` creates or reuses a
-PR against `main`, builds the PR body from Epic F reports, and records the pending artifact version.
-The artifact approval status follows PR lifecycle webhooks:
-
-- Open PR: `pending`
-- Closed without merge: `rejected`
-- Reopened after rejection: `pending`
-- Merged: `approved` and final for the MVP
-
-Run the live smoke after Postgres is up and migrations are applied:
-
-```bash
-make db-up
-make db-migrate
 make epic-g-smoke
-```
-
-The smoke leaves the PR open for human review. The GitHub webhook endpoint is available at:
-
-```text
-POST /webhooks/github
-```
-
-Real webhook delivery requires configuring the model repo webhook in GitHub with the same
-`GITHUB_WEBHOOK_SECRET` value used by the backend. For local demos, expose the backend with
-Cloudflare Tunnel or another HTTPS tunnel and configure GitHub to send PR events to
-`https://<your-tunnel-domain>/webhooks/github`.
-
-The live Epic G recording/demo branch and merge commit were cleaned from the model repo after
-recording, and demo DB rows were cleared while preserving Alembic migration metadata.
-
-## Epic H Async Orchestration And API
-
-Epic H adds the backend entrypoint for Epic I:
-
-```text
-backend/orchestration/
-backend/api/
-```
-
-The Phase 1 orchestrator runs the live As-Is pipeline:
-
-```text
-Epic E ingestion -> Epic F reconciliation/validation -> Epic G branch + PR
-```
-
-If Epic F validation fails, the pipeline halts before GitHub commit/PR creation. Async execution uses
-FastAPI `BackgroundTasks` and the existing `jobs` table, with status transitions:
-
-```text
-queued -> running -> succeeded/failed
-```
-
-Frontend-facing endpoints require `X-API-Key: <BACKEND_API_KEY>`:
-
-```text
-POST /systems/{system_id}/ingest
-GET /jobs/{job_id}
-GET /systems/{system_id}/elements?layer=application
-GET /elements/{element_id}
-GET /systems/{system_id}/artifact-versions
-```
-
-Health, OpenAPI docs, and GitHub webhooks are separate from this API key contract:
-
-```text
-GET /                  # health check
-GET /docs              # generated FastAPI docs
-POST /webhooks/github  # GitHub HMAC signature auth
-```
-
-Run the live H smoke only when DB, provider, GitHub, model repo, evidence, and API key settings are
-ready:
-
-```bash
-make db-up
-make db-migrate
 make epic-h-smoke
 ```
+
+Side effect warning:
+
+- `make epic-g-smoke` may create a real GitHub PR.
+- `make epic-h-smoke` may run live agents and create a real GitHub PR.
+- The frontend Run button uses the same live backend pipeline.
+
+## Provider And Environment Troubleshooting
+
+### `.env` Changed But The Run Used Old Values
+
+Cause: FastAPI settings are cached in the running Python process.
+
+Fix:
+
+```bash
+# Stop uvicorn fully with Ctrl+C, then restart:
+uv run uvicorn backend.api.app:create_app --factory --reload --host 127.0.0.1 --port 8000
+```
+
+Use this after changing:
+
+- `EVIDENCE_ROOT`
+- `LLM_PROVIDER`
+- `OLLAMA_MODEL`
+- `OLLAMA_BASE_URL`
+- `GROQ_MODEL`
+- `ANTHROPIC_MODEL`
+- any API key or secret
+
+### Model Page Is Empty
+
+This is expected before approval. The Model page reads `model_element_index`, and the index refreshes only after a PR is merged and the GitHub webhook succeeds.
+
+Check artifact status:
+
+```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -c "select run_id, approval_status, pr_url from artifact_versions order by created_at desc;"
+```
+
+### Artifact Stayed Pending After Closing A PR
+
+If you close without merging, the webhook should mark it `rejected`. If it stays `pending`, GitHub probably did not reach the local backend.
+
+Check:
+
+1. Cloudflare Tunnel is running.
+2. GitHub webhook Payload URL points to the current tunnel URL.
+3. Webhook secret matches `GITHUB_WEBHOOK_SECRET`.
+4. Event type includes Pull requests.
+5. Backend process was restarted after changing `.env`.
+
+### Approved Fixture Fails During Ingestion
+
+Check LangSmith first. Common causes:
+
+- Running backend still has stale `.env` values.
+- Provider model is too weak or is not following tool-call schemas.
+- Provider quota or cloud API failed.
+- The model repo was not reset and contains stale partial output.
+
+The ingestion tools normalize common formatting issues, but they still reject invalid model facts, unsupported relationships, missing evidence, and unsafe paths.
+
+### No PR Was Created
+
+Check the latest job:
+
+```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -c "select id, run_id, status, left(coalesce(error_message,''), 500) as error_message from jobs order by started_at desc nulls last;"
+```
+
+If validation failed, the pipeline intentionally halts before Epic G.
+
+### GitHub Push Fails
+
+Check:
+
+- `GITHUB_TOKEN` is a fine-grained token.
+- Token is scoped to `mo-sameh1/mvp-phase1-model`.
+- Contents permission is Read and write.
+- Pull requests permission is Read and write.
+- `MODEL_REPO_CHECKOUT` points to a real local checkout.
+- Local model repo is on `main` and can fetch from `origin`.
+
+## Manual Cleanup Commands
+
+Stop local app processes:
+
+```bash
+pkill -f "uvicorn backend.api.app:create_app" || true
+pkill -f "vite --host" || true
+pkill -f "cloudflared tunnel" || true
+```
+
+Clear application DB demo rows:
+
+```bash
+PGPASSWORD=mvp_app_password psql 'postgresql://mvp_app@localhost:5433/mvp_phase1' \
+  -v ON_ERROR_STOP=1 \
+  -c 'truncate table artifact_versions, evidence_sources, jobs, model_element_index, legacy_systems restart identity cascade;'
+```
+
+Reset model repo to clean `main`:
+
+```bash
+cd ~/Documents/GitHub/mvp-phase1-model
+git switch main
+git fetch origin main
+git reset --hard origin/main
+git clean -fd systems
+```
+
+Delete a remote feature branch if a demo branch should be removed:
+
+```bash
+git push origin --delete feature/ingest-demo-legacy-system-<run-id>
+```
+
+## Development Workflow
+
+Install:
+
+```bash
+uv sync
+npm install --prefix frontend
+```
+
+Format:
+
+```bash
+make format
+```
+
+Verify:
+
+```bash
+make lint
+make test
+make frontend-build
+make frontend-test
+```
+
+Database migrations:
+
+```bash
+make db-up
+make db-migrate
+make db-downgrade
+make db-migrate
+```
+
+Commit style:
+
+```text
+feat: add new capability
+fix: correct behavior or harden runtime
+docs: update documentation
+test: add or improve tests
+refactor: improve structure without behavior change
+chore: tooling or maintenance
+```
+
+## Security Notes
+
+- Never commit `.env`.
+- Never commit real client evidence.
+- Never print GitHub, LangSmith, Groq, Anthropic, or Ollama keys in logs.
+- Keep `BACKEND_API_KEY`, `GITHUB_TOKEN`, and `GITHUB_WEBHOOK_SECRET` separate.
+- Use the minimum-scoped GitHub PAT possible.
+- The MVP frontend API key is browser-visible and is not production-grade authentication.
+- GitHub webhook approval changes must always verify the HMAC signature.
+
+## Source Of Truth For Future Agents
+
+Future development agents should read:
+
+```text
+AGENTS.md
+.AGENTS/project-brief.md
+.AGENTS/architecture-contracts.md
+.AGENTS/development-workflow.md
+.AGENTS/epic-tracker.md
+agents/skills/archimate-metamodel/SKILL.md
+```
+
+The key rule is simple: agents may extract candidates, but deterministic schema validation, ArchiMate metamodel validation, git history, PR review, and evidence citations decide what becomes accepted model content.
