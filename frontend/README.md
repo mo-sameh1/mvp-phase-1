@@ -1,8 +1,12 @@
 # Frontend
 
-Epic I will build the React screens for the Phase 1 MVP. The current scaffold exists so the
-frontend can run through Vite and call the FastAPI backend without browser CORS problems during
-local development.
+React/Vite/TypeScript frontend for the Phase 1 MVP reviewer loop.
+
+Implemented screens:
+
+- Run: trigger As-Is ingestion and poll job status.
+- Model: browse indexed ArchiMate elements by layer and open git-backed element detail.
+- Versions: inspect artifact versions, approval status, and GitHub PR links.
 
 ## Local Development
 
@@ -32,3 +36,10 @@ The Vite dev server proxies browser calls from `/api/*` to the backend target co
 For the MVP, clickable external links should be limited to GitHub PR URLs and model JSON URLs
 returned by the backend. Evidence locators should be displayed as traceability text unless a later
 task adds a source-controlled evidence URL contract.
+
+## Checks
+
+```bash
+npm run build
+npm run test:run
+```

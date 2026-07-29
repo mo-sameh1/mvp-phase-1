@@ -13,7 +13,7 @@ include .env
 export
 endif
 
-.PHONY: sync lint format test frontend-install frontend-dev frontend-build db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke epic-e-smoke epic-f-smoke epic-g-smoke epic-h-smoke
+.PHONY: sync lint format test frontend-install frontend-dev frontend-build frontend-test db-up db-down db-migrate db-downgrade langsmith-smoke archimate-smoke deepagent-smoke deepagent-subagent-smoke epic-d-smoke epic-e-smoke epic-f-smoke epic-g-smoke epic-h-smoke
 
 sync:
 	$(UV) sync
@@ -37,6 +37,9 @@ frontend-dev:
 
 frontend-build:
 	cd frontend && npm run build
+
+frontend-test:
+	cd frontend && npm run test:run
 
 db-up:
 	docker compose up -d postgres

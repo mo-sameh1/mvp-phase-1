@@ -2,10 +2,10 @@
 
 Engineering repository for the 7bots.ai legacy modernization MVP. This repo is the application codebase. It is separate from the GitHub model repository that will store generated ArchiMate output.
 
-The current implementation covers Epics A-H: local tooling, Postgres, configuration,
+The current implementation covers Epics A-I: local tooling, Postgres, configuration,
 Alembic migrations, data access functions, the ArchiMate metamodel skill, Deep Agent runtime
 scaffold, source-grounded ingestion subagent contracts, model assembly subagents, and GitHub PR
-automation, plus the async Phase 1 backend API.
+automation, the async Phase 1 backend API, and the React/Vite model viewer.
 
 ## Local Setup
 
@@ -117,6 +117,7 @@ The script should create one visible trace in the configured LangSmith project. 
 make sync          # install dependencies
 make frontend-install
 make frontend-build
+make frontend-test
 make lint          # ruff + black check
 make test          # pytest
 make db-up         # start local Postgres
@@ -131,10 +132,9 @@ make epic-g-smoke  # live GitHub PR smoke, requires DB and GitHub token
 make epic-h-smoke  # live API orchestration smoke, may create a real GitHub PR
 ```
 
-## Frontend Dev Proxy
+## Frontend Model Viewer
 
-Epic I will build the React screens under `frontend/`. The Vite scaffold is already configured for
-MVP local development:
+Epic I adds the React/Vite/TypeScript model viewer under `frontend/`:
 
 ```bash
 cd frontend
@@ -147,9 +147,35 @@ The frontend should call API paths through `/api`. Vite rewrites `/api/*` to the
 target from `VITE_DEV_API_PROXY_TARGET`, defaulting to `http://127.0.0.1:8000`. This avoids browser
 CORS setup for the local MVP while keeping `X-API-Key` auth in place.
 
+Routes:
+
+```text
+/systems/<system-id>/run
+/systems/<system-id>/elements
+/systems/<system-id>/elements/<element-id>
+/systems/<system-id>/versions
+```
+
+Frontend environment values:
+
+```bash
+VITE_API_BASE_PATH=/api
+VITE_API_KEY=<same value as BACKEND_API_KEY>
+VITE_DEFAULT_SYSTEM_ID=demo-legacy-system
+VITE_JOB_POLLING_MS=3000
+VITE_DEV_API_PROXY_TARGET=http://127.0.0.1:8000
+```
+
 Clickable frontend links should stay limited to GitHub PR URLs and the `model_json_url` returned by
 `GET /elements/{element_id}`. Evidence locators remain visible traceability text until a later task
 defines a source-controlled evidence URL convention.
+
+Frontend checks:
+
+```bash
+make frontend-build
+make frontend-test
+```
 
 ## ArchiMate Metamodel Skill
 

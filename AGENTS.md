@@ -11,12 +11,12 @@ This repository is the engineering codebase for the 7bots.ai MVP Phase 1 legacy 
 
 ## Current State
 
-Epics A-H are implemented on `master`.
+Epics A-I are implemented on `master`.
 
 The current codebase contains the Python/DB foundation, ArchiMate metamodel skill, Deep Agent
 runtime scaffold, Epic E ingestion subagent contracts, Epic F assembly subagents, and Epic G GitHub
-PR automation. Epic H adds the async Phase 1 backend API. Frontend screens and the full
-end-to-end demo fixture are intentionally still future epics.
+PR automation. Epic H adds the async Phase 1 backend API. Epic I adds the React/Vite model viewer.
+The full end-to-end demo fixture is intentionally still a future epic.
 
 ## Non-Negotiables
 
@@ -32,6 +32,8 @@ end-to-end demo fixture are intentionally still future epics.
 uv sync
 make lint
 make test
+make frontend-build
+make frontend-test
 make archimate-smoke
 make epic-e-smoke
 make epic-f-smoke

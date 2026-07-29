@@ -150,11 +150,27 @@ Verification:
 - `make test`
 - `make epic-h-smoke` is available for live API orchestration and may create a real GitHub PR.
 
-## Pending
-
 ### Epic I - Frontend Model Viewer
 
-React/Vite frontend for triggering runs, viewing job status, browsing model elements, and viewing artifact PR status.
+Status: implemented as a React/Vite/TypeScript reviewer UI.
+
+Implemented behavior:
+
+- I1 frontend scaffold: feature-oriented `frontend/src/` structure with typed API client, browser
+  routing, shared components, env-based API config, and Vite `/api` proxy.
+- I2 run/status screen: triggers As-Is ingestion, polls job status, persists the last job id per
+  system in `localStorage`, and renders backend failure messages.
+- I3 model browser/detail: lists indexed elements grouped by ArchiMate layer, filters/searches them,
+  reads git-backed detail JSON, displays evidence citations as text, and links relationships to
+  target element detail routes.
+- I4 artifact versions: lists commit/run/approval metadata and opens GitHub PR links externally.
+
+Verification:
+
+- `make frontend-build`
+- `make frontend-test`
+
+## Pending
 
 ### Epic J - End-to-End Validation
 
