@@ -42,9 +42,12 @@ class GitRunner:
     def _env(self) -> dict[str, str]:
         env = os.environ.copy()
         if self.token:
+            basic_credentials = base64.b64encode(
+                f"x-access-token:{self.token}".encode("utf-8")
+            ).decode("ascii")
             env["GIT_CONFIG_COUNT"] = "1"
             env["GIT_CONFIG_KEY_0"] = "http.https://github.com/.extraheader"
-            env["GIT_CONFIG_VALUE_0"] = f"AUTHORIZATION: bearer {self.token}"
+            env["GIT_CONFIG_VALUE_0"] = f"AUTHORIZATION: basic {basic_credentials}"
         return env
 
 
