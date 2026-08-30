@@ -16,5 +16,8 @@ else
   git clone --branch main "${MODEL_REPO_URL}" "${MODEL_REPO_CHECKOUT}"
 fi
 
+echo "Running database migrations..."
+uv run alembic upgrade head
+
 echo "Starting backend..."
 exec uv run uvicorn backend.api.app:create_app --factory --host 0.0.0.0 --port "${PORT:-8000}"
