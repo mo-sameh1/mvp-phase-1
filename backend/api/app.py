@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from backend.api.routes import router as api_router
@@ -15,8 +16,10 @@ SESSION_DEPENDENCY = Depends(get_session)
 SETTINGS_DEPENDENCY = Depends(get_settings)
 
 
-def create_app() -> FastAPI:
+def create_app(settings: Settings | None = None) -> FastAPI:
+    app_settings = settings or get_settings()
     app = FastAPI(title="7bots MVP Phase 1")
+    _add_cors_middleware(app, app_settings)
     app.include_router(api_router)
 
     @app.get("/")
@@ -55,3 +58,19 @@ def create_app() -> FastAPI:
         }
 
     return app
+
+
+def _add_cors_middleware(app: FastAPI, settings: Settings) -> None:
+    origins = _parse_cors_origins(settings.cors_allowed_origins)
+    if not origins:
+        return
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "X-API-Key"],
+    )
+
+
+def _parse_cors_origins(value: str) -> list[str]:
+    return [origin.strip().rstrip("/") for origin in value.split(",") if origin.strip()]

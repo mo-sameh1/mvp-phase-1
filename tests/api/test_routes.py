@@ -33,6 +33,27 @@ def test_api_rejects_placeholder_api_key(session, tmp_path: Path) -> None:
     assert response.status_code == 503
 
 
+def test_cors_preflight_allows_configured_frontend_origin(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    settings.cors_allowed_origins = "https://front-production-9849.up.railway.app"
+    client = TestClient(create_app(settings=settings))
+
+    response = client.options(
+        "/systems/demo/elements",
+        headers={
+            "Origin": "https://front-production-9849.up.railway.app",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "x-api-key,content-type",
+        },
+    )
+
+    assert response.status_code == 200
+    assert (
+        response.headers["access-control-allow-origin"]
+        == "https://front-production-9849.up.railway.app"
+    )
+
+
 def test_trigger_ingestion_returns_queued_job(session, monkeypatch, tmp_path: Path) -> None:
     calls = []
     monkeypatch.setattr(

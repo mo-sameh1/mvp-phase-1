@@ -179,6 +179,7 @@ Use `.env` at the repo root.
 | `GITHUB_TOKEN` | `github_pat_...` | Fine-grained GitHub PAT scoped only to the model repo. |
 | `GITHUB_WEBHOOK_SECRET` | random hex string | Generate locally with `openssl rand -hex 32`. |
 | `BACKEND_API_KEY` | random app secret | Generate locally with `openssl rand -hex 32`. |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,https://front-production-9849.up.railway.app` | Comma-separated browser origins allowed to call the backend directly. Required when frontend and backend are deployed on different domains. |
 | `LANGCHAIN_API_KEY` | `lsv2_...` | LangSmith account settings. |
 | `LANGCHAIN_PROJECT` | `7bots-mvp-phase1-dev` | LangSmith project name. |
 | `LLM_PROVIDER` | `ollama`, `groq`, or `anthropic` | Pick one provider. |
@@ -235,6 +236,40 @@ VITE_API_KEY=<same-value-as-BACKEND_API_KEY>
 ```
 
 This is MVP-level API protection. It is browser-visible and not production auth, but it gives the MVP a consistent authenticated API contract.
+
+### Split-Domain Deployment
+
+Local frontend development uses the Vite proxy: browser calls go to `/api/*` on
+`http://127.0.0.1:5173`, and Vite forwards them to the backend. A deployed static frontend does not
+have that dev proxy, so it must call the backend service directly.
+
+For the current Railway deployment, configure the backend service with:
+
+```bash
+BACKEND_API_KEY=<generated-value>
+CORS_ALLOWED_ORIGINS=https://front-production-9849.up.railway.app
+```
+
+Configure the frontend service with:
+
+```bash
+VITE_API_BASE_PATH=https://mvp-phase-1-production.up.railway.app
+VITE_API_KEY=<same-value-as-BACKEND_API_KEY>
+```
+
+`VITE_API_BASE_PATH` may be `/api` for local dev, a full `https://...` URL for deployment, or a bare
+hostname such as `mvp-phase-1-production.up.railway.app`, which the frontend normalizes to HTTPS.
+Because Vite environment variables are compiled into the frontend bundle, redeploy the frontend
+after changing any `VITE_*` value.
+
+If deployed frontend requests fail before a job is created, check these first:
+
+- Browser requests should target the backend host, not a path on the frontend host.
+- Backend preflight requests should return CORS headers for the frontend origin.
+- `VITE_API_KEY` and `BACKEND_API_KEY` must match exactly.
+
+Missing LLM or LangSmith credentials are a separate live-run issue. They can make an ingestion job
+fail after it starts, but they should not prevent the frontend from reaching the backend.
 
 ### LangSmith Setup
 
@@ -372,6 +407,9 @@ http://127.0.0.1:5173
 ```
 
 The frontend calls `/api/*`; Vite proxies those requests to `VITE_DEV_API_PROXY_TARGET`, defaulting to `http://127.0.0.1:8000`.
+
+For deployed static frontend builds, set `VITE_API_BASE_PATH` to the full backend URL instead of
+`/api`, and configure the backend `CORS_ALLOWED_ORIGINS` to include the deployed frontend origin.
 
 ### Terminal 3: Webhook Tunnel
 

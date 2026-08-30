@@ -26,6 +26,12 @@ function normalizeBasePath(value: string): string {
   if (!trimmed || trimmed === "/") {
     return "";
   }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed.replace(/\/+$/g, "");
+  }
+  if (/^[a-z0-9.-]+\.[a-z]{2,}(:\d+)?(\/.*)?$/i.test(trimmed)) {
+    return `https://${trimmed.replace(/\/+$/g, "")}`;
+  }
   return `/${trimmed.replace(/^\/+|\/+$/g, "")}`;
 }
 

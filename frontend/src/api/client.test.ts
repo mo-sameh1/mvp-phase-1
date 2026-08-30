@@ -32,6 +32,36 @@ describe("api client", () => {
     );
   });
 
+  it("supports absolute API base URLs", async () => {
+    vi.stubEnv("VITE_API_BASE_PATH", "https://backend.example.com/");
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: "job-1", status: "running" }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await getJob("job-1");
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://backend.example.com/jobs/job-1",
+      expect.any(Object),
+    );
+  });
+
+  it("treats bare deployed hostnames as HTTPS API base URLs", async () => {
+    vi.stubEnv("VITE_API_BASE_PATH", "mvp-phase-1-production.up.railway.app");
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: "job-1", status: "running" }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await getJob("job-1");
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://mvp-phase-1-production.up.railway.app/jobs/job-1",
+      expect.any(Object),
+    );
+  });
+
   it("posts ingestion requests with optional evidence path", async () => {
     const fetchSpy = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ job_id: "job-1", status: "queued" }), { status: 202 }),

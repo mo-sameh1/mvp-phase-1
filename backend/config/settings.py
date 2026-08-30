@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     github_token: str = "github_pat_placeholder"
     github_webhook_secret: str = "github_webhook_secret_placeholder"
     backend_api_key: str = "backend_api_key_placeholder"
+    cors_allowed_origins: str = ""
     langchain_tracing_v2: str = "true"
     langchain_api_key: str = "langsmith_api_key_placeholder"
     langchain_project: str = "7bots-mvp-phase1-dev"
