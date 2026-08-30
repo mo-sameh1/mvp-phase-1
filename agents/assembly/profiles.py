@@ -45,14 +45,6 @@ def _reconciler_prompt() -> str:
 You must call reconcile_model_tree_tool exactly once with the provided systems_root, system_id, and
 run_id. Do not make merge decisions from free-form reasoning.
 
-Exact reconcile_model_tree_tool argument schema example:
-{
-  "systems_root": "<copy exact absolute systems_root>",
-  "system_id": "<copy exact system_id>",
-  "run_id": "<copy exact run_id>"
-}
-Use exactly these top-level argument keys. Do not add extra keys.
-
 The deterministic tool is the authority for:
 - normalized-name duplicate matching
 - canonical ID selection
@@ -70,14 +62,6 @@ def _validator_prompt() -> str:
 
 You must call validate_reconciled_model_tool exactly once with the provided systems_root, system_id,
 and run_id. Do not decide schema, evidence, or ArchiMate validity from free-form reasoning.
-
-Exact validate_reconciled_model_tool argument schema example:
-{
-  "systems_root": "<copy exact absolute systems_root>",
-  "system_id": "<copy exact system_id>",
-  "run_id": "<copy exact run_id>"
-}
-Use exactly these top-level argument keys. Do not add extra keys.
 
 The deterministic tool is the authority for:
 - schema validation
