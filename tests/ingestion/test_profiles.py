@@ -64,12 +64,24 @@ def test_prompts_include_grounding_and_fail_closed_rules() -> None:
         assert "Never call write_file or edit_file" in prompt
         assert "Preserve the exact system_id, run_id, and systems_root" in prompt
         assert "Do not abbreviate UUIDs" in prompt
+        assert "Exact " in prompt
+        assert "argument schema example" in prompt
+        assert '"run_id": "<copy exact run_id>"' in prompt
+        assert '"systems_root": "<copy exact absolute systems_root>"' in prompt
+        assert "Do not add extra keys" in prompt
 
     assert "line or line range" in get_ingestion_profile("code-analyzer").system_prompt
     assert "line or line range" in get_ingestion_profile("infra-analyzer").system_prompt
+    element_prompt = get_ingestion_profile("code-analyzer").system_prompt
+    assert "Exact write_model_element_tool argument schema example" in element_prompt
+    assert '"element": {' in element_prompt
+    assert '"relationships": []' in element_prompt
     integration_prompt = get_ingestion_profile("integration-mapper").system_prompt
     assert "target IDs that already exist" in integration_prompt
     assert "reported as skipped" in integration_prompt
+    assert "Exact append_model_relationship_tool argument schema example" in integration_prompt
+    assert '"source_id": "case-handling-service"' in integration_prompt
+    assert '"relationship": {' in integration_prompt
 
 
 def test_build_ingestion_subagents_returns_deep_agent_ready_profiles() -> None:
