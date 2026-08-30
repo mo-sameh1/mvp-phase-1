@@ -7,6 +7,8 @@ set -euo pipefail
 
 MODEL_REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_MODEL_REPO}.git"
 
+git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+
 if [ -d "${MODEL_REPO_CHECKOUT}/.git" ]; then
   echo "Model repo exists, pulling latest..."
   git -C "${MODEL_REPO_CHECKOUT}" fetch origin main
