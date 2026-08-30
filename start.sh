@@ -7,6 +7,11 @@ set -euo pipefail
 
 MODEL_REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_MODEL_REPO}.git"
 
+export GIT_AUTHOR_NAME="${GIT_AUTHOR_NAME:-7bots MVP Bot}"
+export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-bot@7bots.ai}"
+export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-7bots MVP Bot}"
+export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-bot@7bots.ai}"
+
 if [ -d "${MODEL_REPO_CHECKOUT}/.git" ]; then
   echo "Model repo exists, pulling latest..."
   git -C "${MODEL_REPO_CHECKOUT}" fetch origin main
