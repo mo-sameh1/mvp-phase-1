@@ -199,6 +199,12 @@ Create a fine-grained GitHub personal access token:
 
 Do not reuse this token as the frontend or backend API key.
 
+In deployment secret stores, set the variable name to `GITHUB_TOKEN` and the value to the token
+itself, for example `github_pat_...`. Do not paste the full assignment
+`GITHUB_TOKEN=github_pat_...` as the value. The backend normalizes common wrappers such as accidental
+quotes or `Bearer ` prefixes, but the token must still be active, unexpired, and scoped to the model
+repo.
+
 ### GitHub Webhook Secret
 
 Generate a secret:
@@ -727,11 +733,18 @@ If validation failed, the pipeline intentionally halts before Epic G.
 Check:
 
 - `GITHUB_TOKEN` is a fine-grained token.
+- Deployment secret value is the token itself, not `GITHUB_TOKEN=<token>`.
+- Token has no leading/trailing spaces or accidental quotes in the deployment UI.
+- Token is active and has not expired or been revoked.
 - Token is scoped to `mo-sameh1/mvp-phase1-model`.
 - Contents permission is Read and write.
 - Pull requests permission is Read and write.
 - `MODEL_REPO_CHECKOUT` points to a real local checkout.
 - Local model repo is on `main` and can fetch from `origin`.
+
+The container startup script authenticates Git with an ephemeral `Authorization` header and keeps
+the model repo `origin` URL as `https://github.com/<owner>/<repo>.git`. This avoids stale tokenized
+remotes when deployment secrets are rotated.
 
 ## Manual Cleanup Commands
 

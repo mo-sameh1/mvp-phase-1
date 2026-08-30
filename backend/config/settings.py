@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +30,40 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
     anthropic_api_key: str = "anthropic_api_key_placeholder"
     anthropic_model: str = "claude-3-5-haiku-latest"
+
+    @field_validator(
+        "github_token",
+        "github_webhook_secret",
+        "backend_api_key",
+        "langchain_api_key",
+        "ollama_api_key",
+        "groq_api_key",
+        "anthropic_api_key",
+        mode="before",
+    )
+    @classmethod
+    def normalize_secret_value(cls, value: object, info: ValidationInfo) -> object:
+        if not isinstance(value, str):
+            return value
+
+        normalized = _strip_secret_wrappers(value)
+        assignment_prefix = f"{info.field_name.upper()}="
+        if normalized.startswith(assignment_prefix):
+            normalized = _strip_secret_wrappers(normalized.removeprefix(assignment_prefix))
+
+        if info.field_name == "github_token":
+            for prefix in ("Bearer ", "bearer ", "token "):
+                if normalized.startswith(prefix):
+                    normalized = _strip_secret_wrappers(normalized.removeprefix(prefix))
+
+        return normalized
+
+
+def _strip_secret_wrappers(value: str) -> str:
+    normalized = value.replace("\r", "").replace("\n", "").strip()
+    if len(normalized) >= 2 and normalized[0] == normalized[-1] and normalized[0] in {"'", '"'}:
+        normalized = normalized[1:-1].strip()
+    return normalized
 
 
 @lru_cache

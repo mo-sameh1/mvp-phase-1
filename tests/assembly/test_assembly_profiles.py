@@ -27,6 +27,11 @@ def test_assembly_subagent_prompts_require_tool_use() -> None:
         assert "must call" in prompt
         assert "deterministic tool is the authority" in prompt
         assert "free-form reasoning" in prompt
+        assert "argument schema example" in prompt
+        assert '"systems_root": "<copy exact absolute systems_root>"' in prompt
+        assert '"system_id": "<copy exact system_id>"' in prompt
+        assert '"run_id": "<copy exact run_id>"' in prompt
+        assert "Do not add extra keys" in prompt
 
 
 def test_create_assembly_orchestrator_wires_subagents(monkeypatch) -> None:

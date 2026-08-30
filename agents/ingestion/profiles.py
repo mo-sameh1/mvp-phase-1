@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -208,6 +209,10 @@ def _system_prompt(
         "- If the tool returns skipped, report the candidate in your summary. If the tool rejects "
         "a candidate, stop; the pipeline will fail closed.\n"
         "- Never call write_file or edit_file for relationship updates."
+        f"\n\nExact append_model_relationship_tool argument schema example:\n"
+        f"{_relationship_tool_example()}\n"
+        "Use exactly these top-level argument keys: source_id, relationship, run_id, systems_root, "
+        "system_id. Do not add extra keys."
         if relationship_only
         else (
             "Tool contract:\n"
@@ -222,6 +227,10 @@ def _system_prompt(
             "- The deterministic tool validates agents.schema.ModelElement and serializes JSON.\n"
             "- If the tool rejects a candidate, stop; the pipeline will fail closed.\n"
             "- Never call write_file or edit_file for model JSON."
+            f"\n\nExact write_model_element_tool argument schema example:\n"
+            f"{_element_tool_example()}\n"
+            "Use exactly these top-level argument keys: element, run_id, systems_root, system_id. "
+            "Do not add extra keys."
         )
     )
 
@@ -258,3 +267,53 @@ Traceability rules:
 
 {tool_contract}
 """
+
+
+def _element_tool_example() -> str:
+    return json.dumps(
+        {
+            "element": {
+                "id": "case-handling-service",
+                "layer": "application",
+                "archimate_type": "Application Service",
+                "name": "Case Handling Service",
+                "documentation": "Handles permit case intake and status lookup.",
+                "confidence": "observed",
+                "evidence": [
+                    {
+                        "source_type": "code",
+                        "locator": "code/services/cases.py:12-38",
+                        "excerpt": "class CaseService:",
+                    }
+                ],
+                "relationships": [],
+            },
+            "run_id": "<copy exact run_id>",
+            "systems_root": "<copy exact absolute systems_root>",
+            "system_id": "<copy exact system_id>",
+        },
+        indent=2,
+    )
+
+
+def _relationship_tool_example() -> str:
+    return json.dumps(
+        {
+            "source_id": "case-handling-service",
+            "relationship": {
+                "target_id": "permit-review-process",
+                "type": "Serving",
+                "evidence": [
+                    {
+                        "source_type": "integration",
+                        "locator": "integration/api-map.md:20-28",
+                        "excerpt": "Case Handling Service supports the Permit Review Process.",
+                    }
+                ],
+            },
+            "run_id": "<copy exact run_id>",
+            "systems_root": "<copy exact absolute systems_root>",
+            "system_id": "<copy exact system_id>",
+        },
+        indent=2,
+    )
