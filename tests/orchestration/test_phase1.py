@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,15 @@ from backend.config.settings import Settings
 from backend.gitops.operations import CommitToModelResult, PullRequestResult
 from backend.orchestration import phase1
 from backend.orchestration.phase1 import PipelineError, run_as_is_ingestion
+
+
+@pytest.fixture(autouse=True)
+def fake_model_repo_transaction(monkeypatch):
+    monkeypatch.setattr(
+        phase1,
+        "model_repo_transaction",
+        lambda settings: nullcontext(object()),
+    )
 
 
 def test_run_as_is_ingestion_calls_pipeline_in_order(session, monkeypatch, tmp_path: Path) -> None:
@@ -29,7 +39,7 @@ def test_run_as_is_ingestion_calls_pipeline_in_order(session, monkeypatch, tmp_p
     monkeypatch.setattr(
         phase1,
         "commit_to_model",
-        lambda settings, system_id, run_id: _commit(system_id, run_id),
+        lambda settings, system_id, run_id, transaction: _commit(system_id, run_id),
     )
 
     def fake_open_pull_request(
@@ -70,7 +80,7 @@ def test_run_as_is_ingestion_stops_before_git_when_validation_fails(
     monkeypatch.setattr(
         phase1,
         "commit_to_model",
-        lambda settings, system_id, run_id: git_calls.append(run_id),
+        lambda settings, system_id, run_id, transaction: git_calls.append(run_id),
     )
 
     with pytest.raises(PipelineError, match="validation failed"):
@@ -125,7 +135,7 @@ def test_run_as_is_ingestion_stops_before_git_when_validation_has_zero_elements(
     monkeypatch.setattr(
         phase1,
         "commit_to_model",
-        lambda settings, system_id, run_id: git_calls.append(run_id),
+        lambda settings, system_id, run_id, transaction: git_calls.append(run_id),
     )
 
     with pytest.raises(PipelineError, match="zero valid model elements"):

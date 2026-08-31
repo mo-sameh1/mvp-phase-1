@@ -10,7 +10,7 @@ from agents.assembly.validator import validate_reconciled_model
 from agents.ingestion.fixture_runner import run_fixture_ingestion
 from backend.config.settings import Settings, get_settings
 from backend.database.session import build_sessionmaker
-from backend.gitops.operations import commit_to_model, open_pull_request
+from backend.gitops.operations import commit_to_model, model_repo_transaction, open_pull_request
 from backend.repository.systems import create_legacy_system, get_legacy_system
 
 
@@ -24,30 +24,36 @@ def main() -> int:
 
     repo = Path(settings.model_repo_checkout).expanduser().resolve()
     try:
-        reconciliation_report_path, validation_report_path = _seed_model_repo(
-            settings=settings,
-            repo=repo,
-            system_id=args.system_id,
-            run_id=args.run_id,
-        )
-        commit_result = commit_to_model(settings, args.system_id, args.run_id)
-        SessionLocal = build_sessionmaker()
-        with SessionLocal() as session:
-            if get_legacy_system(session, args.system_id) is None:
-                create_legacy_system(
-                    session,
-                    system_id=args.system_id,
-                    name=args.system_id,
-                    description="Epic G smoke system.",
-                )
-            pr_result = open_pull_request(
-                settings,
-                session,
-                commit_result,
-                validation_report_path,
-                reconciliation_report_path,
+        with model_repo_transaction(settings) as transaction:
+            reconciliation_report_path, validation_report_path = _seed_model_repo(
+                settings=settings,
+                repo=repo,
+                system_id=args.system_id,
+                run_id=args.run_id,
             )
-            session.commit()
+            commit_result = commit_to_model(
+                settings,
+                args.system_id,
+                args.run_id,
+                transaction=transaction,
+            )
+            SessionLocal = build_sessionmaker()
+            with SessionLocal() as session:
+                if get_legacy_system(session, args.system_id) is None:
+                    create_legacy_system(
+                        session,
+                        system_id=args.system_id,
+                        name=args.system_id,
+                        description="Epic G smoke system.",
+                    )
+                pr_result = open_pull_request(
+                    settings,
+                    session,
+                    commit_result,
+                    validation_report_path,
+                    reconciliation_report_path,
+                )
+                session.commit()
     except Exception as exc:
         print(f"Epic G smoke failed: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1

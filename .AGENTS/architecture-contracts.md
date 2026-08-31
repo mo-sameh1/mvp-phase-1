@@ -61,6 +61,9 @@ systems/demo-legacy-system/as-is/technology/.gitkeep
 - Epic G GitHub automation lives behind `backend/gitops/` adapters; keep local git, GitHub HTTP, PR body generation, webhook security, and model-index refresh modular.
 - GitHub webhook signature verification is mandatory before any approval-status change.
 - G1/G2 are idempotent for repeated `run_id` retries and must not duplicate branches, PRs, or artifact-version rows.
+- A Phase 1 run owns an exclusive transaction on the model checkout. It starts from clean `main`,
+  never uses git stash, and restores a clean `main` checkout with no staged or untracked output on
+  success or failure. A branch pushed by a failed transaction must be removed.
 - Epic H orchestration is the backend entrypoint for Phase 1 runs. It must halt before Epic G
   commit/PR creation when Epic F validation fails.
 - Background job execution uses the existing `jobs` table for `queued`, `running`, `succeeded`, and

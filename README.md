@@ -451,6 +451,11 @@ Expected behavior:
 
 The Model page lists elements only after a PR is merged and the webhook has refreshed the index. A pending PR is intentionally not shown as approved model content.
 
+Each ingestion job holds an exclusive transaction lock on the dedicated model checkout. The job
+syncs a clean `main` before agents write, never uses `git stash`, and returns the local checkout to
+clean `main` after success or failure. If commit, push, or PR creation fails after a run branch was
+pushed, the transaction removes that remote branch as part of rollback.
+
 ## API Contract
 
 Frontend-facing endpoints require:
@@ -707,9 +712,15 @@ Check LangSmith first. Common causes:
 - Running backend still has stale `.env` values.
 - Provider model is too weak or is not following tool-call schemas.
 - Provider quota or cloud API failed.
-- The model repo was not reset and contains stale partial output.
+- The deployed model checkout could not be fetched or restored to clean `main`.
 
 The ingestion tools normalize common formatting issues, but they still reject invalid model facts, unsupported relationships, missing evidence, and unsafe paths.
+
+After a failed job, this command should print nothing:
+
+```bash
+git -C ../mvp-phase1-model status --porcelain
+```
 
 ### No PR Was Created
 

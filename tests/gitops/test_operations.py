@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -24,7 +25,12 @@ def test_branch_name_and_commit_message_are_deterministic() -> None:
 def test_commit_to_model_returns_existing_branch_idempotently(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(operations, "remote_branch_commit", lambda runner, branch: "abc123")
 
-    result = commit_to_model(_settings(tmp_path), "demo", "run-1")
+    result = commit_to_model(
+        _settings(tmp_path),
+        "demo",
+        "run-1",
+        transaction=_transaction(tmp_path),
+    )
 
     assert result.status == "existing_branch"
     assert result.pushed is True
@@ -32,15 +38,17 @@ def test_commit_to_model_returns_existing_branch_idempotently(monkeypatch, tmp_p
 
 
 def test_commit_to_model_no_changes_returns_noop(monkeypatch, tmp_path: Path) -> None:
-    calls = []
     monkeypatch.setattr(operations, "remote_branch_commit", lambda runner, branch: None)
-    monkeypatch.setattr(operations, "checkout_base_branch", lambda runner, base: calls.append(base))
     monkeypatch.setattr(operations, "staged_or_worktree_changes", lambda runner, path: False)
-    monkeypatch.setattr(operations, "current_commit", lambda runner: "base123")
+    monkeypatch.setattr(operations, "repository_has_changes", lambda runner: False)
 
-    result = commit_to_model(_settings(tmp_path), "demo", "run-1")
+    result = commit_to_model(
+        _settings(tmp_path),
+        "demo",
+        "run-1",
+        transaction=_transaction(tmp_path),
+    )
 
-    assert calls == ["main"]
     assert result.status == "no_changes"
     assert result.pushed is False
     assert result.commit_sha == "base123"
@@ -52,8 +60,9 @@ def test_commit_to_model_stages_only_system_path_and_pushes(
 ) -> None:
     calls = {}
     monkeypatch.setattr(operations, "remote_branch_commit", lambda runner, branch: None)
-    monkeypatch.setattr(operations, "checkout_base_branch", lambda runner, base: None)
     monkeypatch.setattr(operations, "staged_or_worktree_changes", lambda runner, path: True)
+    monkeypatch.setattr(operations, "repository_has_changes", lambda runner: False)
+    monkeypatch.setattr(operations, "branch_exists_locally", lambda runner, branch: False)
     monkeypatch.setattr(operations, "checkout_branch", lambda runner, branch, start_point: None)
 
     def fake_commit(runner, pathspec, message):
@@ -68,11 +77,19 @@ def test_commit_to_model_stages_only_system_path_and_pushes(
         lambda runner, branch: calls.setdefault("branch", branch),
     )
 
-    result = commit_to_model(_settings(tmp_path), "demo", "run-1")
+    transaction = _transaction(tmp_path)
+    result = commit_to_model(
+        _settings(tmp_path),
+        "demo",
+        "run-1",
+        transaction=transaction,
+    )
 
     assert calls["pathspec"] == "systems/demo"
     assert calls["message"] == "feat(as-is): update demo model for run-1"
     assert calls["branch"] == "feature/ingest-demo-run-1"
+    assert transaction.local_branches == ["feature/ingest-demo-run-1"]
+    assert transaction.pushed_branches == ["feature/ingest-demo-run-1"]
     assert result.status == "pushed"
 
 
@@ -147,6 +164,20 @@ def _settings(tmp_path: Path) -> Settings:
         model_repo_checkout=str(tmp_path),
         github_model_repo="example/repo",
         github_token="token",
+    )
+
+
+def _transaction(tmp_path: Path):
+    local_branches = []
+    pushed_branches = []
+    return SimpleNamespace(
+        runner=operations.GitRunner(tmp_path.resolve(), "example/repo", "token"),
+        base_branch="main",
+        base_commit="base123",
+        local_branches=local_branches,
+        pushed_branches=pushed_branches,
+        register_local_branch=local_branches.append,
+        register_pushed_branch=pushed_branches.append,
     )
 
 

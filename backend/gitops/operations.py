@@ -9,12 +9,14 @@ from backend.config.settings import Settings
 from backend.gitops.github_client import GitHubClient
 from backend.gitops.local_git import (
     GitRunner,
-    checkout_base_branch,
+    ModelRepoTransaction,
+    branch_exists_locally,
     checkout_branch,
     commit_all_for_path,
-    current_commit,
+    delete_local_branch,
     push_branch,
     remote_branch_commit,
+    repository_has_changes,
     staged_or_worktree_changes,
 )
 from backend.gitops.pr_description import build_pr_description
@@ -57,11 +59,14 @@ def commit_to_model(
     system_id: str,
     run_id: str,
     *,
+    transaction: ModelRepoTransaction,
     base_branch: str = "main",
 ) -> CommitToModelResult:
     repo = Path(settings.model_repo_checkout).expanduser().resolve()
     branch = branch_name(system_id, run_id)
-    runner = GitRunner(repo, settings.github_model_repo, settings.github_token)
+    runner = transaction.runner
+    if runner.repo != repo or transaction.base_branch != base_branch:
+        raise ValueError("Model commit must use the active transaction checkout and base branch.")
     remote_commit = remote_branch_commit(runner, branch)
     if remote_commit is not None:
         return CommitToModelResult(
@@ -74,22 +79,29 @@ def commit_to_model(
             message="Remote branch already exists for this run.",
         )
 
-    checkout_base_branch(runner, base_branch)
     pathspec = f"systems/{system_id}"
     if not staged_or_worktree_changes(runner, pathspec):
+        if repository_has_changes(runner):
+            raise RuntimeError(f"Model repository has unexpected changes outside {pathspec}.")
         return CommitToModelResult(
             system_id=system_id,
             run_id=run_id,
             branch=branch,
-            commit_sha=current_commit(runner),
+            commit_sha=transaction.base_commit,
             status="no_changes",
             pushed=False,
             message=f"No changes under {pathspec}.",
         )
 
-    checkout_branch(runner, branch, start_point=base_branch)
+    if branch_exists_locally(runner, branch):
+        delete_local_branch(runner, branch)
+    checkout_branch(runner, branch, start_point=transaction.base_commit)
+    transaction.register_local_branch(branch)
     commit_sha = commit_all_for_path(runner, pathspec, commit_message(system_id, run_id))
+    if repository_has_changes(runner):
+        raise RuntimeError(f"Model commit left unexpected changes outside {pathspec}.")
     push_branch(runner, branch)
+    transaction.register_pushed_branch(branch)
     return CommitToModelResult(
         system_id=system_id,
         run_id=run_id,
@@ -99,6 +111,16 @@ def commit_to_model(
         pushed=True,
         message="Model changes committed and pushed.",
     )
+
+
+def model_repo_transaction(
+    settings: Settings,
+    *,
+    base_branch: str = "main",
+) -> ModelRepoTransaction:
+    repo = Path(settings.model_repo_checkout).expanduser().resolve()
+    runner = GitRunner(repo, settings.github_model_repo, settings.github_token)
+    return ModelRepoTransaction(runner=runner, base_branch=base_branch)
 
 
 def open_pull_request(

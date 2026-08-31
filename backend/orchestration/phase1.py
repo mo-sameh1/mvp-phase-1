@@ -16,6 +16,7 @@ from backend.gitops.operations import (
     CommitToModelResult,
     PullRequestResult,
     commit_to_model,
+    model_repo_transaction,
     open_pull_request,
 )
 
@@ -62,54 +63,60 @@ def run_as_is_ingestion(
         raise PipelineError(f"Evidence path does not exist: {resolved_evidence_path}")
     evidence_route = _evidence_route(resolved_evidence_path, paths.evidence_root)
 
-    _run_ingestion_agent(
-        system_id=system_id,
-        run_id=run_id,
-        evidence_route=evidence_route,
-        settings=settings,
-    )
-    _validate_ingestion_outputs(paths.systems_root, system_id)
-    _run_assembly_agent(system_id=system_id, run_id=run_id, systems_root=paths.systems_root)
-
-    reconciliation_report_path = _report_path(
-        paths.systems_root,
-        system_id,
-        run_id,
-        "reconciliation",
-    )
-    validation_report_path = _report_path(paths.systems_root, system_id, run_id, "validation")
-    validation = _load_report(validation_report_path)
-    validation_status = validation.get("status", "unknown")
-    if int(validation.get("total_elements", 0)) < 1:
-        raise PipelineError(
-            "Epic E produced zero valid model elements; halting before GitHub PR creation."
+    with model_repo_transaction(settings) as transaction:
+        _run_ingestion_agent(
+            system_id=system_id,
+            run_id=run_id,
+            evidence_route=evidence_route,
+            settings=settings,
         )
-    if validation_status != "passed":
-        raise PipelineError(
-            "Epic F validation failed; halting before GitHub PR creation. "
-            f"See {validation_report_path}"
-        )
+        _validate_ingestion_outputs(paths.systems_root, system_id)
+        _run_assembly_agent(system_id=system_id, run_id=run_id, systems_root=paths.systems_root)
 
-    commit_result = commit_to_model(settings, system_id, run_id)
-    if not commit_result.pushed:
-        raise PipelineError(f"Model commit was not pushed: {commit_result.message}")
-    pull_request = open_pull_request(
-        settings,
-        session,
-        commit_result,
-        validation_report_path,
-        reconciliation_report_path,
-    )
-    return AsIsIngestionResult(
-        system_id=system_id,
-        run_id=run_id,
-        status="succeeded",
-        validation_status=validation_status,
-        reconciliation_report_path=str(reconciliation_report_path),
-        validation_report_path=str(validation_report_path),
-        commit=commit_result,
-        pull_request=pull_request,
-    )
+        reconciliation_report_path = _report_path(
+            paths.systems_root,
+            system_id,
+            run_id,
+            "reconciliation",
+        )
+        validation_report_path = _report_path(paths.systems_root, system_id, run_id, "validation")
+        validation = _load_report(validation_report_path)
+        validation_status = validation.get("status", "unknown")
+        if int(validation.get("total_elements", 0)) < 1:
+            raise PipelineError(
+                "Epic E produced zero valid model elements; halting before GitHub PR creation."
+            )
+        if validation_status != "passed":
+            raise PipelineError(
+                "Epic F validation failed; halting before GitHub PR creation. "
+                f"See {validation_report_path}"
+            )
+
+        commit_result = commit_to_model(
+            settings,
+            system_id,
+            run_id,
+            transaction=transaction,
+        )
+        if not commit_result.pushed:
+            raise PipelineError(f"Model commit was not pushed: {commit_result.message}")
+        pull_request = open_pull_request(
+            settings,
+            session,
+            commit_result,
+            validation_report_path,
+            reconciliation_report_path,
+        )
+        return AsIsIngestionResult(
+            system_id=system_id,
+            run_id=run_id,
+            status="succeeded",
+            validation_status=validation_status,
+            reconciliation_report_path=str(reconciliation_report_path),
+            validation_report_path=str(validation_report_path),
+            commit=commit_result,
+            pull_request=pull_request,
+        )
 
 
 def _run_ingestion_agent(
